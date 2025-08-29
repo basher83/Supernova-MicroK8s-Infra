@@ -17,7 +17,7 @@ fd = "10.2.0"
 pre-commit = "4.3.0"
 rg = "14.1.1"
 # Pin to Terraform >=1.10 to support Ephemeral Resources
-terraform = "1.13.0"
+terraform = "1.13.1"
 terraform-docs = "0.20.0"
 tflint = "0.58.1"
 # Additional useful tools for infrastructure projects
