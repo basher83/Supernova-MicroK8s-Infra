@@ -4,7 +4,8 @@
         "--device=/dev/net/tun"
     ],
     "features": {
-        "ghcr.io/tailscale/codespace/tailscale": {}
+        "ghcr.io/tailscale/codespace/tailscale": {},
+        "ghcr.io/skriptfabrik/devcontainer-features/infisical-cli:1": {}
     },
     "postCreateCommand": ".devcontainer/setup-mise.sh",
     "customizations": {
