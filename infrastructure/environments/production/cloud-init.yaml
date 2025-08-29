@@ -1,0 +1,110 @@
+#cloud-config
+# Cloud-init configuration for Vault cluster VMs
+---
+# Install required packages
+packages:
+  - qemu-guest-agent
+  - wget
+  - gpg
+  - curl
+  - unzip
+  - jq
+  - net-tools
+  - ca-certificates
+  - gnupg
+  - lsb-release
+  - software-properties-common
+  - nftables
+# Add HashiCorp repository and install Vault
+runcmd:
+  # Start QEMU guest agent immediately
+  - systemctl start qemu-guest-agent
+  - systemctl enable qemu-guest-agent
+  # Add HashiCorp GPG key and repository
+  - wget -O - https://apt.releases.hashicorp.com/gpg | gpg --dearmor \
+    -o /usr/share/keyrings/hashicorp-archive-keyring.gpg
+  - echo "deb [arch=$(dpkg --print-architecture) \
+    signed-by=/usr/share/keyrings/hashicorp-archive-keyring.gpg] \
+    https://apt.releases.hashicorp.com $(lsb_release -cs) main" | \
+    tee /etc/apt/sources.list.d/hashicorp.list
+  # Update and install Vault
+  - apt-get update
+  - apt-get install -y vault
+  # Create Vault data directory
+  - mkdir -p /opt/vault/data
+  - chown -R vault:vault /opt/vault
+  # Set Vault to not start automatically (will configure first)
+  - systemctl stop vault
+  - systemctl disable vault
+  # Configure basic nftables (will be managed by Ansible later)
+  - systemctl enable nftables
+  - |
+    cat > /etc/nftables.conf << 'EOF'
+    #!/usr/sbin/nft -f
+    flush ruleset
+     table inet filter {
+       chain input {
+        type filter hook input priority 0; policy accept;
+        # NOTE: Permissive policy by design. Ansible applies hardened rules post‑cloud‑init.
+        # Do not expose Vault to untrusted networks before Ansible completes.
+       }
+     }
+     EOF
+  - systemctl start nftables
+  # Set up Vault environment (HTTP listener during initial setup)
+  - echo 'VAULT_ADDR=http://127.0.0.1:8200' >> /etc/environment
+  # Log installation status
+  - vault version || echo "Vault installation may have failed"
+  - systemctl status qemu-guest-agent || echo "Guest agent not running"
+# Ensure services are enabled
+bootcmd:
+  - [cloud-init-per, once, qemu-guest-agent-start, systemctl, start, qemu-guest-agent]
+
+# Create ansible user for automation
+users:
+  - name: ansible
+    groups: [adm, cdrom, dip, plugdev, lxd, sudo]
+    shell: /bin/bash
+    sudo: ['ALL=(ALL) NOPASSWD:ALL']
+    ssh_authorized_keys:
+      - ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIFa5HX4EzWRRY+YhC979KqYtBPLvTOXtriwzql1uTthp
+# System configuration
+timezone: UTC
+locale: en_US.UTF-8
+# Disable swap for better Vault performance
+swap:
+  filename: ""
+  size: 0
+# Write Vault configuration files (to be customized per node later)
+write_files:
+  - path: /etc/vault.d/vault.hcl
+    owner: vault:vault
+    permissions: '0640'
+    content: |
+      # Vault configuration
+      # This is a placeholder - will be updated based on node role
+      ui = true
+      disable_mlock = true
+
+      listener "tcp" {
+        # Bind to loopback for security while TLS is disabled
+        address       = "127.0.0.1:8200"
+        tls_disable   = true  # Will be configured with proper TLS later
+      }
+
+      # Storage backend will be configured based on role:
+      # - Master: Dev mode with Transit engine
+      # - Production: Raft storage backend
+  - path: /usr/local/bin/vault-health-check.sh
+    owner: root:root
+    permissions: '0755'
+    content: |
+      #!/bin/bash
+      # Simple health check script for Vault
+      curl -s -o /dev/null -w "%{http_code}" \
+        http://127.0.0.1:8200/v1/sys/health | \
+        grep -E "^(200|429|473|501|503)$" > /dev/null
+      exit $?
+# Final message
+final_message: "Vault VM initialization complete. Vault installed but not \
+  started. Configure based on node role (master/production)."
