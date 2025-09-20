@@ -248,6 +248,116 @@ Deploy a scalable, highly available MicroK8s Kubernetes cluster infrastructure t
 ### Operational Metrics
 
 - Successful automated deployments
+
+## Checklist Template
+
+How to use:
+
+- Fill each placeholder (values in <angle brackets>) with your exact settings.
+- Items marked [Proposed] are sensible defaults you can accept or replace.
+
+### Environments
+
+- Environment subnets (dev/stage/prod CIDRs): <dev CIDR> / <stage CIDR> / <prod CIDR> — Proposed: 192.168.10.0/24 / 192.168.20.0/24 / 192.168.30.0/24 [Proposed]
+- Node IP assignment: <static via cloud-init | DHCP reservations> — Proposed: static per node via cloud-init [Proposed]
+- Node sizing (dev/stage/prod): <vCPU, RAM, disk> — Proposed: dev 4 vCPU / 16 GB / 100 GB; stage 8 vCPU / 32 GB / 200 GB; prod 8 vCPU / 32 GB / 200 GB [Proposed]
+- Maintenance capacity: <spare node | headroom policy> — Proposed: no spare; ≤70% utilization target; PDBs to tolerate 1 node drain [Proposed]
+- Environment parity: <deviations from prod in dev/stage> — Proposed: dev may omit HA storage and strict policies; stage parity with prod [Proposed]
+
+### Networking
+
+- Pod CIDR: <CIDR> — Proposed: 10.1.0.0/16 (MicroK8s default) [Proposed]
+- Service CIDR: <CIDR> — Proposed: 10.152.183.0/24 (MicroK8s default) [Proposed]
+- MetalLB IP pools (per env): <dev range> / <stage range> / <prod range> — Proposed: 192.168.10.50-192.168.10.69 / 192.168.20.50-192.168.20.79 / 192.168.30.50-192.168.30.89 [Proposed]
+- Ingress rate limiting: <req/s, burst, scope> — Proposed: dev off; stage 50 r/s, burst 100 per IP; prod 200 r/s, burst 400 per IP; return 429 [Proposed]
+- TLS issuer: <LE staging | LE prod | Internal CA>, challenge: <HTTP-01 | DNS-01> — Proposed: dev/stage LE staging HTTP-01; prod LE prod DNS-01 (wildcard) [Proposed]
+- DNS automation: <ExternalDNS provider | manual> — Proposed: ExternalDNS via Cloudflare (token with zone:edit) [Proposed]
+- Domains: <dev domain> / <stage domain> / <prod domain> — Proposed: dev.example.com / stage.example.com / example.com [Proposed]
+- Firewall allow-list: <host/edge ports to open> — Proposed: 16443, 80/443, 10250-10255 plus app/storage ports; deny NodePort from WAN [Proposed]
+
+### Storage
+
+- Primary backend (stage): <NFS | Ceph | Other> — Proposed: NFS (simple, RWX) [Proposed]
+- Primary backend (prod): <NFS | Ceph | Other> — Proposed: Ceph (replica 3, failure domains by host), or hardened NFS + backups if Ceph unavailable [Proposed]
+- NFS details: <server IPs, exports, mount opts> — Proposed: 192.168.30.10:/srv/nfs/k8s, nfs4, rw,noatime,hard,timeo=600 [Proposed]
+- StorageClasses: <names, params, default, reclaimPolicy> — Proposed: sc-nfs (default non-prod, Delete), sc-ceph-rbd (default prod, Retain), sc-fast (SSD tier) [Proposed]
+- Backup tool/scope: <Velero/Kasten/etc., scope> — Proposed: Velero + restic for namespaces, PVs, CRDs [Proposed]
+- Backup cadence/retention: <RPO targets> — Proposed: daily (30d), weekly (12w), monthly (12m), offsite copy [Proposed]
+- Backup target: <S3/MinIO/NFS/PBS> — Proposed: S3-compatible MinIO with SSE-KMS [Proposed]
+- DR drills: <frequency, scenarios> — Proposed: quarterly restores of Tier-1 app to staging [Proposed]
+
+### MicroK8s Add-ons
+
+- Core: <dns, hostpath-storage, dashboard, metrics-server> — Proposed: enable all in dev; disable dashboard in prod or protect with SSO [Proposed]
+- Networking: <metallb, ingress, cert-manager> — Proposed: enable all [Proposed]
+- Registry: <MicroK8s registry | Harbor | External> — Proposed: dev MicroK8s registry; stage/prod Harbor with GC and RBAC [Proposed]
+- Monitoring: <stack choice> — Proposed: kube-prometheus-stack (Prometheus, Alertmanager, Grafana) [Proposed]
+- Logs: <Loki | ELK> — Proposed: Loki + Promtail; 14–30d retention by env [Proposed]
+- GPU: <needed?> — Proposed: off by default; add tainted GPU node pool if needed [Proposed]
+
+### Workloads
+
+- Microservices list: <services, owners, tiers> — Proposed: define Tier-1 (customer-facing), Tier-2 (internal), Tier-3 (batch) [Proposed]
+- Stateful services: <DBs/queues in-cluster or external, HA mode> — Proposed: prefer managed/external for prod; in-cluster for dev/test only [Proposed]
+- CI/CD components: <runners/executors in cluster?> — Proposed: ephemeral K8s runners with namespace RBAC [Proposed]
+- Dev/test namespaces: <naming, quotas, TTL> — Proposed: namespace per feature; resource quotas; TTL 14 days [Proposed]
+- SLOs per tier: <p95 latency, error budgets> — Proposed: Tier-1 p95 <200 ms, 99.9% monthly SLO [Proposed]
+
+### Integrations
+
+- External services: <APIs, VPCs, VPNs> — Proposed: egress via NAT; restrict with egress policies [Proposed]
+- AuthN/Z: <OIDC/LDAP/AD> — Proposed: OIDC for kubectl and dashboard; group-based RBAC [Proposed]
+- Existing DB/storage: <endpoints, connectivity, secrets> — Proposed: access via private IPs/VPN; secrets via External Secrets [Proposed]
+- CI/CD platform: <Jenkins/GitLab/GitHub Actions> — Proposed: GitHub Actions + ArgoCD GitOps [Proposed]
+
+### Security
+
+- RBAC matrix: <roles, groups, namespaces> — Proposed: cluster-admin (SRE), namespace-admin (team leads), developer read/write per namespace, read-only auditors [Proposed]
+- Service accounts: <per app, scopes, rotation> — Proposed: per-deploy SA with least privilege; rotate annually [Proposed]
+- Network policies: <default posture> — Proposed: default deny-all; explicit allow-lists; restricted egress [Proposed]
+- VPN access: <who, how> — Proposed: WireGuard to admin subnet; SSO enforced [Proposed]
+- Secrets management: <Vault/Infisical/KMS> — Proposed: External Secrets + Vault (KV v2), namespace isolation, KMS-backed [Proposed]
+- Cert rotation: <period, alerts> — Proposed: renew ~60 days before expiry; alert at <15 days remaining [Proposed]
+- Image policy: <scanning, admission, provenance> — Proposed: Trivy in CI; Kyverno/Gatekeeper admission; cosign signature verification; allow-listed registries [Proposed]
+- Audit logging: <sink, retention> — Proposed: ship API/audit logs to Loki or SIEM; retain 90 days [Proposed]
+
+### Operations
+
+- Metrics: <exporters, intervals> — Proposed: node, kube-state, cAdvisor; 30s scrape [Proposed]
+- Logs: <sources, labels, retention> — Proposed: app + infra logs with k8s labels; 14d dev, 30d prod [Proposed]
+- Alerting: <severities, escalation> — Proposed: P1 page SRE; P2 notify; on-call rotation; quiet hours policy [Proposed]
+- Dashboards: <list + owners> — Proposed: cluster health, app dashboards per team, SLOs; owners assigned [Proposed]
+- GitOps: <ArgoCD/Flux, drift, sync> — Proposed: ArgoCD; auto-sync non-prod; manual approve prod; PR-only changes [Proposed]
+- Deploy strategies: <blue/green | canary | rolling> — Proposed: canary via Argo Rollouts for Tier-1; rolling for others [Proposed]
+- Registry strategy: <local/external, cache> — Proposed: Harbor as primary; pull-through cache to Docker Hub/ghcr.io [Proposed]
+- Maintenance windows: <per env> — Proposed: dev ad-hoc; stage Tue 20:00 (1h); prod monthly Sun 22:00 (2h) [Proposed]
+- Upgrades: <MicroK8s channel, cadence, rollback> — Proposed: 1.30/stable; stage first; prod 2 weeks later; snapshot + rollback plan [Proposed]
+- Node drain: <PDBs, surge, SOP> — Proposed: PDBs for critical services; maxUnavailable 1; SOP documented [Proposed]
+- Host patching: <OS updates, kernel> — Proposed: unattended security updates weekly; coordinated reboots [Proposed]
+
+### Proxmox & Infra
+
+- Hosts: <count, CPU/mem, failure domains> — Proposed: spread K8s nodes across distinct Proxmox hosts/storage [Proposed]
+- Templates: <Ubuntu image, hardening, cloud-init> — Proposed: Ubuntu 22.04 LTS template, SSH keys, NTP, CIS baseline [Proposed]
+- Storage (Proxmox): <LVM/ZFS/Ceph, disk layout> — Proposed: ZFS mirror for OS; VM disks on ZFS with snapshots; PBS for backups [Proposed]
+- Networking: <bridge, VLAN IDs, MTU, IPv6> — Proposed: vmbr0 trunk; dev VLAN 110, stage 120, prod 130; MTU 1500; IPv6 disabled unless needed [Proposed]
+- IPAM/ownership: <who allocates, process> — Proposed: SRE owns IPAM; change tickets required [Proposed]
+- Capacity/quotas: <overcommit, headroom, namespace quotas> — Proposed: CPU 1.5x, mem 1.2x; 30% headroom; team quotas [Proposed]
+
+### Implementation Phases
+
+- Phase 1 (Dev) entry/exit: <prereqs, tests> — Proposed: exit when LB, ingress, TLS staging, sample app OK [Proposed]
+- Phase 2 (Core) entry/exit: <storage, RBAC, monitoring> — Proposed: exit when SCs defaulted, RBAC applied, dashboards live, runbooks drafted [Proposed]
+- Phase 3 (Staging) entry/exit: <prod-like config, load/security tests> — Proposed: exit when load test passes SLOs; backup/restore validated [Proposed]
+- Phase 4 (Prod) entry/exit: <cutover, certs, DNS, alerts> — Proposed: exit when on-call green, dashboards healthy, docs handed over [Proposed]
+- Risks/dependencies: <DNS delegation, IP ranges, storage readiness, CA> — Proposed: track as blockers per phase [Proposed]
+
+### Success Criteria
+
+- Performance: <p95 latency, pod start time, throughput> — Proposed: p95 <200 ms (Tier-1); pod cold start <20s; target RPS per service [Proposed]
+- Availability: <SLA, RTO, RPO> — Proposed: Stage 99.9%; Prod 99.95%; RTO 1h (Tier-1); RPO 15m (Tier-1) [Proposed]
+- Operational: <CI/CD success rate, MTTR, CFR> — Proposed: >98% pipeline success; MTTR <30m non-prod / <1h prod; change failure rate <10% [Proposed]
+
 - Cluster auto-scaling functionality
 - Backup and restore validation
 - [TODO: Specific application metrics?]
