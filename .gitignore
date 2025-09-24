@@ -46,6 +46,8 @@ hosts
 # OS junk
 Thumbs.db
 
+# Mise local configuration
+.mise.local.toml
 
 .mcp.json
 
