@@ -1,173 +1,204 @@
 ---
-Last Updated: <Run: date +"%Y-%m-%d" - update when modifying>
-Total Tasks: <Update with actual count>
-Total Estimated Time: <Update with actual hours>
-Overall Completion: <Update with actual percentage>
-Current Phase: <Update with current phase name>
+Last Updated: 2025-09-24
+Total Tasks: 15
+Total Estimated Time: 28 hours
+Overall Completion: 0%
+Current Phase: Refactoring & Consolidation
 ---
 
-# Task Tracker - [Project Name]
+# Task Tracker - Supernova-MicroK8s-Infra
 
 ## Executive Summary
 
-This tracker manages the implementation of [brief project description]. The tasks are organized by category and phase, providing clear visibility into progress, dependencies, and the critical path to completion.
+This tracker manages the refactoring and improvement of the Supernova-MicroK8s-Infra project, which automates deployment of a production-ready MicroK8s Kubernetes cluster on Proxmox. The tasks address critical configuration issues, code duplication, and missing validations identified during the code review.
 
 ## Current Status Overview
 
 ### Phase Progress
 
-| Phase          | Completion | Status     |
-| -------------- | ---------- | ---------- |
-| [Phase 1 Name] | 0%         | ⏸️ Planned |
-| [Phase 2 Name] | 0%         | ⏸️ Planned |
-| [Phase 3 Name] | 0%         | ⏸️ Planned |
+| Phase                        | Completion | Status      |
+| ---------------------------- | ---------- | ----------- |
+| Critical Fixes               | 0%         | 🔄 Active   |
+| Configuration Consolidation  | 0%         | ⏸️ Planned  |
+| Testing & Validation         | 0%         | ⏸️ Planned  |
+| Documentation & Optimization | 0%         | ⏸️ Planned  |
 
 ### Quick Metrics
 
-- **Critical Path Duration**: ~X hours ([primary category] tasks)
-- **Total Effort Required**: ~X hours
-- **Target Completion**: [Target date]
-- **Blockers**: [List any current blockers or "None currently"]
+- **Critical Path Duration**: ~10 hours (CI and IaC tasks)
+- **Total Effort Required**: ~28 hours
+- **Target Completion**: 2025-10-01
+- **Blockers**: None currently
 
-## Phase 1: [Phase 1 Name] Tasks
+## Phase 1: Critical Fixes
 
 ### Critical Path (P0)
 
-| Task ID                                      | Title              | Priority | Duration | Dependencies | Status   |
-| -------------------------------------------- | ------------------ | -------- | -------- | ------------ | -------- |
-| [[PREFIX]-001]([category]/[PREFIX]-001-*.md) | <Brief task title> | P0       | Xh       | None         | 🔄 Ready |
-| [[PREFIX]-002]([category]/[PREFIX]-002-*.md) | <Brief task title> | P0       | Xh       | None         | 🔄 Ready |
-| [[PREFIX]-003]([category]/[PREFIX]-003-*.md) | <Brief task title> | P0       | Xh       | None         | 🔄 Ready |
+| Task ID                           | Title                                   | Priority | Duration | Dependencies | Status   |
+| --------------------------------- | --------------------------------------- | -------- | -------- | ------------ | -------- |
+| [CI-001](ci/CI-001-*.md)         | Fix GitHub workflow infrastructure path | P0       | 1h       | None         | 🔄 Ready |
+| [IaC-001](iac/IaC-001-*.md)      | Consolidate Ansible playbook logic     | P0       | 4h       | None         | 🔄 Ready |
+| [DOCS-001](docs/DOCS-001-*.md)   | Clean up duplicate terraform READMEs   | P0       | 1h       | None         | 🔄 Ready |
+
+**Phase 1 Total**: ~6 hours
+
+## Phase 2: Configuration Consolidation
 
 ### Important Features (P1)
 
-| Task ID                                      | Title              | Priority | Duration | Dependencies | Status     |
-| -------------------------------------------- | ------------------ | -------- | -------- | ------------ | ---------- |
-| [[PREFIX]-004]([category]/[PREFIX]-004-*.md) | <Brief task title> | P1       | Xh       | [PREFIX]-001 | ⏸️ Blocked |
-| [[PREFIX]-005]([category]/[PREFIX]-005-*.md) | <Brief task title> | P1       | Xh       | [PREFIX]-002 | ⏸️ Blocked |
+| Task ID                              | Title                                          | Priority | Duration | Dependencies | Status     |
+| ------------------------------------ | ---------------------------------------------- | -------- | -------- | ------------ | ---------- |
+| [CONFIG-001](config/CONFIG-001-*.md) | Create single source of truth for IPs/networks | P1       | 3h       | IaC-001      | ⏸️ Blocked |
+| [IaC-002](iac/IaC-002-*.md)         | Complete empty Ansible role implementations    | P1       | 3h       | IaC-001      | ⏸️ Blocked |
+| [CONFIG-002](config/CONFIG-002-*.md) | Enable and configure pre-commit hooks         | P1       | 1h       | None         | 🔄 Ready   |
+| [IaC-003](iac/IaC-003-*.md)         | Parameterize ansible user configuration       | P1       | 2h       | CONFIG-001   | ⏸️ Blocked |
+
+**Phase 2 Total**: ~9 hours
+
+## Phase 3: Testing & Validation
+
+### Testing Infrastructure (P1)
+
+| Task ID                           | Title                                    | Priority | Duration | Dependencies | Status     |
+| --------------------------------- | ---------------------------------------- | -------- | -------- | ------------ | ---------- |
+| [TEST-001](test/TEST-001-*.md)   | Add cluster health validation tasks     | P1       | 2h       | IaC-001      | ⏸️ Blocked |
+| [TEST-002](test/TEST-002-*.md)   | Create Molecule tests for Ansible roles | P2       | 3h       | IaC-002      | ⏸️ Blocked |
+| [SEC-001](sec/SEC-001-*.md)      | Implement Ansible Vault for secrets     | P1       | 2h       | CONFIG-001   | ⏸️ Blocked |
+
+**Phase 3 Total**: ~7 hours
+
+## Phase 4: Documentation & Optimization
 
 ### Optimization (P2)
 
-| Task ID                                      | Title              | Priority | Duration | Dependencies | Status     |
-| -------------------------------------------- | ------------------ | -------- | -------- | ------------ | ---------- |
-| [[PREFIX]-006]([category]/[PREFIX]-006-*.md) | <Brief task title> | P2       | Xh       | [PREFIX]-005 | ⏸️ Blocked |
+| Task ID                           | Title                                  | Priority | Duration | Dependencies | Status     |
+| --------------------------------- | -------------------------------------- | -------- | -------- | ------------ | ---------- |
+| [DOCS-002](docs/DOCS-002-*.md)   | Add architecture diagrams              | P2       | 2h       | DOCS-001     | ⏸️ Blocked |
+| [IaC-004](iac/IaC-004-*.md)      | Add error handling and rollback       | P2       | 2h       | TEST-001     | ⏸️ Blocked |
+| [IaC-005](iac/IaC-005-*.md)      | Add monitoring stack deployment       | P2       | 2h       | TEST-001     | ⏸️ Blocked |
+| [CONFIG-003](config/CONFIG-003-*.md) | Implement Terraform workspaces    | P2       | 2h       | CONFIG-001   | ⏸️ Blocked |
 
-**Phase 1 Total**: ~X hours
-
-## Phase 2: [Phase 2 Name] Tasks
-
-| Task ID                                      | Title              | Priority | Duration | Dependencies | Status     |
-| -------------------------------------------- | ------------------ | -------- | -------- | ------------ | ---------- |
-| [[PREFIX]-007]([category]/[PREFIX]-007-*.md) | <Brief task title> | P1       | Xh       | [PREFIX]-003 | ⏸️ Blocked |
-| [[PREFIX]-008]([category]/[PREFIX]-008-*.md) | <Brief task title> | P1       | Xh       | [PREFIX]-007 | ⏸️ Blocked |
-| [[PREFIX]-009]([category]/[PREFIX]-009-*.md) | <Brief task title> | P1       | Xh       | [PREFIX]-007 | ⏸️ Blocked |
-
-**Phase 2 Total**: ~X hours
+**Phase 4 Total**: ~8 hours
 
 ## Task Dependencies
 
 ```mermaid
 graph LR
-    A[[PREFIX]-001: Task A] --> D[[PREFIX]-005: Task D]
-    B[[PREFIX]-002: Task B] --> E[[PREFIX]-004: Task E]
-    C[[PREFIX]-003: Task C] --> F[[PREFIX]-007: Task F]
-    D --> G[[PREFIX]-006: Task G]
-    C --> D
-    E --> D
+    A[CI-001: Fix GitHub workflow] --> E[DOCS-002: Architecture diagrams]
+    B[IaC-001: Consolidate Ansible] --> F[CONFIG-001: Single source of truth]
+    B --> G[IaC-002: Complete roles]
+    B --> H[TEST-001: Health validation]
+    C[DOCS-001: Clean READMEs] --> E
+    D[CONFIG-002: Pre-commit hooks]
+    F --> I[IaC-003: Parameterize users]
+    F --> J[SEC-001: Ansible Vault]
+    F --> M[CONFIG-003: Terraform workspaces]
+    G --> K[TEST-002: Molecule tests]
+    H --> L[IaC-004: Error handling]
+    H --> N[IaC-005: Monitoring stack]
 
     style A fill:#f9f,stroke:#333,stroke-width:2px
     style B fill:#f9f,stroke:#333,stroke-width:2px
     style C fill:#f9f,stroke:#333,stroke-width:2px
-```
-
-## Execution Timeline
-
-```mermaid
-gantt
-    title [Project Name] Implementation
-    dateFormat YYYY-MM-DD
-    section Week 1
-    [PREFIX]-001 Task A :a1, 2025-01-20, 2h
-    [PREFIX]-002 Task B :a2, 2025-01-20, 1h
-    [PREFIX]-003 Task C :a3, 2025-01-21, 2h
-    section Week 2
-    [PREFIX]-004 Task D :b1, after a1 a2, 1h
-    [PREFIX]-005 Task E :b2, after a3, 3h
-    [PREFIX]-006 Task F :b3, after b2, 2h
-    section Week 3
-    [PREFIX]-007 Task G :c1, after b3, 2h
-    [PREFIX]-008 Task H :c2, after b3, 3h
-    [PREFIX]-009 Task I :c3, after b3, 2h
+    style D fill:#f9f,stroke:#333,stroke-width:2px
 ```
 
 ## Critical Path
 
 The minimum time to completion follows this sequence:
 
-1. **Foundation Setup** (Week 1):
+1. **Critical Fixes** (Day 1-2):
+   - CI-001: Fix GitHub workflow paths for documentation generation
+   - IaC-001: Consolidate duplicate Ansible logic into roles
+   - DOCS-001: Clean up terraform directory documentation
 
-   - [PREFIX]-001: <Task description>
-   - [PREFIX]-002: <Task description>
-   - [PREFIX]-003: <Task description>
+2. **Configuration Refactoring** (Day 3-4):
+   - CONFIG-001: Create Terraform outputs → Ansible inventory integration
+   - CONFIG-002: Enable all pre-commit hooks for code quality
+   - IaC-002: Implement empty Ansible roles properly
 
-2. **Core Implementation** (Week 2):
+3. **Validation & Security** (Day 5-6):
+   - TEST-001: Add post-deployment validation
+   - SEC-001: Secure sensitive variables with Ansible Vault
+   - IaC-003: Make configurations more flexible
 
-   - [PREFIX]-004: <Task description>
-   - [PREFIX]-005: <Task description>
-
-3. **Feature Completion** (Week 3):
-   - [PREFIX]-006 through [PREFIX]-009 as needed
-
-**Critical Path Duration**: ~X hours for core functionality
+**Critical Path Duration**: ~10 hours for core functionality fixes
 
 ## Risk Register
 
-| Risk               | Probability | Impact | Mitigation            |
-| ------------------ | ----------- | ------ | --------------------- |
-| <Risk description> | Medium      | High   | <Mitigation strategy> |
-| <Risk description> | Low         | Medium | <Mitigation strategy> |
-| <Risk description> | Low         | Low    | <Mitigation strategy> |
+| Risk                                    | Probability | Impact | Mitigation                                |
+| --------------------------------------- | ----------- | ------ | ----------------------------------------- |
+| Breaking existing deployments          | Medium      | High   | Test changes in isolated environment      |
+| Terraform state conflicts              | Low         | High   | Backup state before major changes         |
+| Ansible role refactoring complexity    | Medium      | Medium | Incremental migration, test each role     |
+| Network configuration misalignment     | Low         | High   | Validate IP ranges don't conflict         |
 
 ## Success Criteria
 
-- [ ] **<Success metric 1>**: <Description>
-- [ ] **<Success metric 2>**: <Description>
-- [ ] **<Success metric 3>**: <Description>
-- [ ] **<Success metric 4>**: <Description>
-- [ ] **<Success metric 5>**: <Description>
+- [ ] **CI/CD Fixed**: GitHub workflows run successfully on PRs
+- [ ] **No Duplication**: Single source of truth for all configurations
+- [ ] **Roles Functional**: All Ansible roles properly implemented and tested
+- [ ] **Validation Complete**: Automated health checks confirm cluster deployment
+- [ ] **Documentation Current**: Architecture diagrams and guides up-to-date
 
 ## Quick Commands
 
-### Development Workflow
+### Infrastructure Workflow
 
 ```bash
-# Update these commands for your specific tech stack
-# Example for web apps:
-cd [project-directory]
-npm run dev          # Start development server
-npm run build        # Build for production
-npm run test         # Run test suite
-npm run lint         # Check code quality
+# Terraform operations
+cd terraform
+mise run fmt              # Format Terraform files
+mise run prod-validate    # Validate configuration
+mise run plan            # Plan infrastructure changes
+mise run apply           # Apply infrastructure changes
 
-# Example for databases:
-psql -f schema.sql   # Apply database schema
-dbt build           # Build data models
-sqlfluff lint       # Check SQL quality
+# Ansible operations
+cd ansible
+ansible-playbook -i inventory/hosts.yml playbooks/playbook.yml --check  # Dry run
+ansible-playbook -i inventory/hosts.yml playbooks/playbook.yml          # Deploy
+ansible-lint             # Check Ansible code quality
+
+# Validation
+mise run full-check      # Complete validation suite
+mise run ansible-lint    # Lint Ansible files
+```
+
+### Task Management
+
+```bash
+# Find ready tasks
+grep "🔄 Ready" tasks/INDEX.md
+
+# Check specific task
+cat tasks/iac/IaC-001-*.md
+
+# Update task status
+# Edit INDEX.md and change status indicators
 ```
 
 ## Notes
 
 - Tasks marked 🔄 Ready can be started immediately
-- Update task status immediately when starting/completing work
-- Update this INDEX.md when adding/removing tasks
-- Archive completed phases to `completed/` subdirectory
+- P0 tasks in Phase 1 are critical and block many other improvements
+- CONFIG-001 is a key dependency that will unblock multiple tasks
+- Consider using feature branches for major refactoring tasks
 
 ## References
 
-- [Project Documentation](../../README.md)
-- [Architecture Decisions](../../decisions/)
-- [Technical Guides](../../docs/)
-- [API Documentation](../../api/)
+- [Project README](../README.md)
+- [Terraform Documentation](../terraform/README.md)
+- [Ansible Roles](../ansible/roles/)
+- [Mise Configuration](../.mise.toml)
+
+## Task Categories
+
+- **CI**: CI/CD pipeline and automation fixes
+- **IaC**: Infrastructure as Code improvements (Terraform/Ansible)
+- **CONFIG**: Configuration management and consistency
+- **DOCS**: Documentation improvements
+- **TEST**: Testing and validation infrastructure
+- **SEC**: Security enhancements
 
 ---
 
