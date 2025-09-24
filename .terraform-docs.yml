@@ -1,4 +1,3 @@
----
 formatter: "markdown table"
 version: ">= 0.16.0"
 header-from: main.tf

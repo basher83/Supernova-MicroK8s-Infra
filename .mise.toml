@@ -47,13 +47,8 @@ depends = ["fmt", "yaml-fmt"]
 
 
 [tasks.prod-validate]
-description = "Validate Terraform in production environment"
-dir = "infrastructure/environments/production"
-run = "terraform init -backend=false -input=false >/dev/null && terraform validate"
-
-[tasks.scalr-validate]
-description = "Validate Terraform in Scalr management"
-dir = "infrastructure/scalr-management"
+description = "Validate Terraform configuration"
+dir = "terraform"
 run = "terraform init -backend=false -input=false >/dev/null && terraform validate"
 
 [tasks.docs]
@@ -62,22 +57,17 @@ run = "./scripts/generate-docs.sh"
 
 [tasks.docs-check]
 description = "Check if Terraform documentation is up-to-date"
-dir = "infrastructure"
+dir = "terraform"
 run = "terraform-docs --config .terraform-docs.yml --output-check ."
 
 [tasks.lint-prod]
-description = "Run TFLint in production environment"
-dir = "infrastructure/environments/production"
-run = "tflint --init && tflint"
-
-[tasks.lint-scalr]
-description = "Run TFLint in Scalr management"
-dir = "infrastructure/scalr-management"
+description = "Run TFLint on Terraform configuration"
+dir = "terraform"
 run = "tflint --init && tflint"
 
 [tasks.check]
-description = "Format, lint, and validate production environment"
-depends = ["fmt", "lint-prod", "lint-scalr", "prod-validate", "scalr-validate"]
+description = "Format, lint, and validate Terraform configuration"
+depends = ["fmt", "lint-prod", "prod-validate"]
 env = { TF_IN_AUTOMATION = "true", TF_INPUT = "false" }
 
 [tasks.hooks-install]
@@ -104,6 +94,10 @@ run = "mise exec -- yamllint ."
 description = "Lint Markdown files"
 run = "mise exec -- markdownlint-cli2 '**/*.md'"
 
+[tasks.ansible-lint]
+description = "Lint Ansible files"
+run = "ansible-lint ansible/"
+
 [tasks.lint-all]
 description = "Run all linting tasks"
 depends = [
@@ -111,18 +105,12 @@ depends = [
     "yaml-lint",
     "markdown-lint",
     "lint-prod",
-    "lint-scalr",
+    "ansible-lint",
 ]
 
 [tasks.validate-all]
-description = "Validate all Terraform configurations"
-depends = [
-    "prod-validate",
-    "scalr-validate",
-    "dev-validate",
-    "test-validate",
-    "staging-validate",
-]
+description = "Validate Terraform configuration"
+depends = ["prod-validate"]
 
 [tasks.full-check]
 description = "Complete validation including formatting, linting, docs, and security"
@@ -139,28 +127,18 @@ env = { TF_IN_AUTOMATION = "true", TF_INPUT = "false" }
 description = "Initial project setup - install hooks and generate docs"
 depends = ["hooks-install", "docs"]
 
-# Environment-specific convenience tasks
-[tasks.prod-plan]
-description = "Run terraform plan for production environment"
-dir = "infrastructure/environments/production"
+# Terraform convenience tasks
+[tasks.plan]
+description = "Run terraform plan"
+dir = "terraform"
 run = "terraform plan"
 
-[tasks.prod-apply]
-description = "Run terraform apply for production environment"
-dir = "infrastructure/environments/production"
+[tasks.apply]
+description = "Run terraform apply"
+dir = "terraform"
 run = "terraform apply"
 
-[tasks.dev-validate]
-description = "Validate Terraform in development environment"
-dir = "infrastructure/environments/development"
-run = "terraform init -backend=false -input=false >/dev/null && terraform validate"
-
-[tasks.test-validate]
-description = "Validate Terraform in test environment"
-dir = "infrastructure/environments/test"
-run = "terraform init -backend=false -input=false >/dev/null && terraform validate"
-
-[tasks.staging-validate]
-description = "Validate Terraform in staging environment"
-dir = "infrastructure/environments/staging"
-run = "terraform init -backend=false -input=false >/dev/null && terraform validate"
+[tasks.destroy]
+description = "Run terraform destroy"
+dir = "terraform"
+run = "terraform destroy"

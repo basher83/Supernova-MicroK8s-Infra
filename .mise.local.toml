@@ -1,0 +1,2 @@
+[tools]
+# "pipx:ansible-lint" = "latest"

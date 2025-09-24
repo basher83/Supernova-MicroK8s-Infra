@@ -15,23 +15,8 @@ cd "$(git rev-parse --show-toplevel)"
 
 echo "Generating Terraform documentation..."
 
-# Generate docs for infrastructure directory and its modules
-echo "Processing infrastructure directory and modules..."
-(cd infrastructure && terraform-docs --config .terraform-docs.yml .)
-
-# Generate docs for each environment individually
-for env_dir in infrastructure/environments/*/; do
-    if [ -d "$env_dir" ] && [ -f "${env_dir}main.tf" ]; then
-        env_name=$(basename "$env_dir")
-        echo "Processing environment: $env_name"
-        terraform-docs --config .terraform-docs.yml "$env_dir"
-    fi
-done
-
-# Generate docs for scalr-management if it has terraform files
-if [ -f "infrastructure/scalr-management/main.tf" ] || [ -f "infrastructure/scalr-management/workspaces.tf" ]; then
-    echo "Processing scalr-management..."
-    terraform-docs --config .terraform-docs.yml infrastructure/scalr-management/
-fi
+# Generate docs for terraform directory
+echo "Processing terraform directory..."
+terraform-docs --config .terraform-docs.yml terraform/
 
 echo "Documentation generation complete!"
