@@ -1,0 +1,19 @@
+#SPDX-License-Identifier: MIT-0
+---
+# tasks file for microk8s_install
+
+- name: Install MicroK8s
+  shell: sudo snap install microk8s --classic
+  args:
+    executable: /bin/bash
+  register: microk8s_install_result
+  changed_when: "'already installed' not in microk8s_install_result.stdout"
+
+- name: Add ansible to MicroK8s group
+  shell: |
+    sudo usermod -a -G microk8s ansible
+    sudo mkdir -p /home/ansible/.kube
+    sudo chown -R ansible:ansible /home/ansible/.kube
+  args:
+    executable: /bin/bash
+  changed_when: false  # This is idempotent but we can't easily check
