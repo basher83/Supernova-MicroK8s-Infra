@@ -1,0 +1,6 @@
+# Ansible-lint ignore rules for Supernova-MicroK8s-Infra
+# Format: filename rule-name [optional comment]
+
+# Infrastructure setup specific ignores
+ansible/playbooks/playbook.yml package-latest  # Snap packages don't follow traditional versioning
+ansible/playbooks/playbook.yml deprecated-module  # Legacy modules acceptable for infrastructure setup
