@@ -1,206 +1,216 @@
 ---
-Last Updated: 2025-09-24
+Last Updated: 2025-09-20
 Total Tasks: 15
-Total Estimated Time: 28 hours
+Total Estimated Time: 45 hours
 Overall Completion: 0%
-Current Phase: Refactoring & Consolidation
+Current Phase: Terraform Setup
 ---
 
-# Task Tracker - Supernova-MicroK8s-Infra
+# Task Tracker - MicroK8s Infrastructure Deployment
 
 ## Executive Summary
 
-This tracker manages the refactoring and improvement of the Supernova-MicroK8s-Infra project, which automates deployment of a production-ready MicroK8s Kubernetes cluster on Proxmox. The tasks address critical configuration issues, code duplication, and missing validations identified during the code review.
+This tracker manages the implementation of a unified, automated MicroK8s deployment system for Proxmox. The project integrates sophisticated Terraform patterns with MicroK8s deployment logic, transforming scattered infrastructure code into a cohesive, production-ready solution as outlined in [Planning Document](../docs/planning.md).
 
 ## Current Status Overview
 
 ### Phase Progress
 
-| Phase                        | Completion | Status      |
-| ---------------------------- | ---------- | ----------- |
-| Critical Fixes               | 0%         | 🔄 Active   |
-| Configuration Consolidation  | 0%         | ⏸️ Planned  |
-| Testing & Validation         | 0%         | ⏸️ Planned  |
-| Documentation & Optimization | 0%         | ⏸️ Planned  |
+| Phase                 | Completion | Status     |
+| --------------------- | ---------- | ---------- |
+| Terraform Setup       | 0%         | 🔄 Ready   |
+| Ansible Configuration | 0%         | ⏸️ Planned |
+| Deployment Pipeline   | 0%         | ⏸️ Planned |
 
 ### Quick Metrics
 
-- **Critical Path Duration**: ~10 hours (CI and IaC tasks)
-- **Total Effort Required**: ~28 hours
-- **Target Completion**: 2025-10-01
-- **Blockers**: None currently
+- **Critical Path Duration**: ~20 hours (TER + initial ANS tasks)
+- **Total Effort Required**: ~45 hours
+- **Target Completion**: 7 weeks from start
+- **Current Blockers**: None - ready to begin
 
-## Phase 1: Critical Fixes
+## Phase 1: Terraform Infrastructure Setup
 
-### Critical Path (P0)
+### Foundation Tasks (Week 1-3)
 
-| Task ID                           | Title                                   | Priority | Duration | Dependencies | Status   |
-| --------------------------------- | --------------------------------------- | -------- | -------- | ------------ | -------- |
-| [CI-001](ci/CI-001-*.md)         | Fix GitHub workflow infrastructure path | P0       | 1h       | None         | 🔄 Ready |
-| [IaC-001](iac/IaC-001-*.md)      | Consolidate Ansible playbook logic     | P0       | 4h       | None         | 🔄 Ready |
-| [DOCS-001](docs/DOCS-001-*.md)   | Clean up duplicate terraform READMEs   | P0       | 1h       | None         | 🔄 Ready |
+| Task ID                                                      | Title                                | Priority | Duration | Dependencies    | Status     |
+| ------------------------------------------------------------ | ------------------------------------ | -------- | -------- | --------------- | ---------- |
+| [TER-001](terraform-setup/TER-001-create-base-structure.md)  | Create Base Infrastructure Structure | P0       | 3h       | None            | 🔄 Ready   |
+| [TER-002](terraform-setup/TER-002-vendor-data-microk8s.md)   | Develop MicroK8s Vendor Data         | P0       | 4h       | TER-001         | ⏸️ Blocked |
+| [TER-003](terraform-setup/TER-003-master-module.md)          | Create Master Node Module            | P0       | 3h       | TER-002         | ⏸️ Blocked |
+| [TER-004](terraform-setup/TER-004-worker-module.md)          | Create Worker Node Module            | P1       | 2h       | TER-002         | ⏸️ Blocked |
+| [TER-005](terraform-setup/TER-005-dev-environment.md)        | Configure Development Environment    | P0       | 2h       | TER-003         | ⏸️ Blocked |
+| [TER-006](terraform-setup/TER-006-staging-environment.md)    | Configure Staging Environment        | P1       | 3h       | TER-003,TER-004 | ⏸️ Blocked |
+| [TER-007](terraform-setup/TER-007-production-environment.md) | Configure Production Environment     | P1       | 3h       | TER-006         | ⏸️ Blocked |
 
-**Phase 1 Total**: ~6 hours
+**Phase 1 Total**: ~20 hours
 
-## Phase 2: Configuration Consolidation
+## Phase 2: Ansible Configuration
 
-### Important Features (P1)
+### MicroK8s Setup Tasks (Week 3-5)
 
-| Task ID                              | Title                                          | Priority | Duration | Dependencies | Status     |
-| ------------------------------------ | ---------------------------------------------- | -------- | -------- | ------------ | ---------- |
-| [CONFIG-001](config/CONFIG-001-*.md) | Create single source of truth for IPs/networks | P1       | 3h       | IaC-001      | ⏸️ Blocked |
-| [IaC-002](iac/IaC-002-*.md)         | Complete empty Ansible role implementations    | P1       | 3h       | IaC-001      | ⏸️ Blocked |
-| [CONFIG-002](config/CONFIG-002-*.md) | Enable and configure pre-commit hooks         | P1       | 1h       | None         | 🔄 Ready   |
-| [IaC-003](iac/IaC-003-*.md)         | Parameterize ansible user configuration       | P1       | 2h       | CONFIG-001   | ⏸️ Blocked |
+| Task ID                                                        | Title                           | Priority | Duration | Dependencies | Status     |
+| -------------------------------------------------------------- | ------------------------------- | -------- | -------- | ------------ | ---------- |
+| [ANS-001](ansible-configuration/ANS-001-role-structure.md)     | Create Ansible Role Structure   | P0       | 2h       | TER-005      | ⏸️ Blocked |
+| [ANS-002](ansible-configuration/ANS-002-microk8s-base.md)      | MicroK8s Base Installation Role | P0       | 3h       | ANS-001      | ⏸️ Blocked |
+| [ANS-003](ansible-configuration/ANS-003-ha-cluster.md)         | HA Cluster Formation Role       | P0       | 4h       | ANS-002      | ⏸️ Blocked |
+| [ANS-004](ansible-configuration/ANS-004-rancher-deployment.md) | Rancher Deployment Role         | P1       | 3h       | ANS-003      | ⏸️ Blocked |
+| [ANS-005](ansible-configuration/ANS-005-argocd-deployment.md)  | ArgoCD Deployment Role          | P1       | 3h       | ANS-003      | ⏸️ Blocked |
 
-**Phase 2 Total**: ~9 hours
+**Phase 2 Total**: ~15 hours
 
-## Phase 3: Testing & Validation
+## Phase 3: Deployment Pipeline
 
-### Testing Infrastructure (P1)
+### Automation Tasks (Week 5-7)
 
-| Task ID                           | Title                                    | Priority | Duration | Dependencies | Status     |
-| --------------------------------- | ---------------------------------------- | -------- | -------- | ------------ | ---------- |
-| [TEST-001](test/TEST-001-*.md)   | Add cluster health validation tasks     | P1       | 2h       | IaC-001      | ⏸️ Blocked |
-| [TEST-002](test/TEST-002-*.md)   | Create Molecule tests for Ansible roles | P2       | 3h       | IaC-002      | ⏸️ Blocked |
-| [SEC-001](sec/SEC-001-*.md)      | Implement Ansible Vault for secrets     | P1       | 2h       | CONFIG-001   | ⏸️ Blocked |
+| Task ID                                              | Title                         | Priority | Duration | Dependencies | Status     |
+| ---------------------------------------------------- | ----------------------------- | -------- | -------- | ------------ | ---------- |
+| [DEP-001](deployment/DEP-001-deployment-script.md)   | Create Main Deployment Script | P0       | 3h       | ANS-003      | ⏸️ Blocked |
+| [DEP-002](deployment/DEP-002-validation-playbook.md) | Cluster Validation Playbook   | P0       | 3h       | DEP-001      | ⏸️ Blocked |
+| [DEP-003](deployment/DEP-003-monitoring-setup.md)    | Monitoring Integration        | P2       | 4h       | DEP-002      | ⏸️ Blocked |
 
-**Phase 3 Total**: ~7 hours
-
-## Phase 4: Documentation & Optimization
-
-### Optimization (P2)
-
-| Task ID                           | Title                                  | Priority | Duration | Dependencies | Status     |
-| --------------------------------- | -------------------------------------- | -------- | -------- | ------------ | ---------- |
-| [DOCS-002](docs/DOCS-002-*.md)   | Add architecture diagrams              | P2       | 2h       | DOCS-001     | ⏸️ Blocked |
-| [IaC-004](iac/IaC-004-*.md)      | Add error handling and rollback       | P2       | 2h       | TEST-001     | ⏸️ Blocked |
-| [IaC-005](iac/IaC-005-*.md)      | Add monitoring stack deployment       | P2       | 2h       | TEST-001     | ⏸️ Blocked |
-| [CONFIG-003](config/CONFIG-003-*.md) | Implement Terraform workspaces    | P2       | 2h       | CONFIG-001   | ⏸️ Blocked |
-
-**Phase 4 Total**: ~8 hours
+**Phase 3 Total**: ~10 hours
 
 ## Task Dependencies
 
 ```mermaid
 graph LR
-    A[CI-001: Fix GitHub workflow] --> E[DOCS-002: Architecture diagrams]
-    B[IaC-001: Consolidate Ansible] --> F[CONFIG-001: Single source of truth]
-    B --> G[IaC-002: Complete roles]
-    B --> H[TEST-001: Health validation]
-    C[DOCS-001: Clean READMEs] --> E
-    D[CONFIG-002: Pre-commit hooks]
-    F --> I[IaC-003: Parameterize users]
-    F --> J[SEC-001: Ansible Vault]
-    F --> M[CONFIG-003: Terraform workspaces]
-    G --> K[TEST-002: Molecule tests]
-    H --> L[IaC-004: Error handling]
-    H --> N[IaC-005: Monitoring stack]
+    TER001[TER-001: Base Structure] --> TER002[TER-002: Vendor Data]
+    TER002 --> TER003[TER-003: Master Module]
+    TER002 --> TER004[TER-004: Worker Module]
+    TER003 --> TER005[TER-005: Dev Env]
+    TER003 --> TER006[TER-006: Staging]
+    TER004 --> TER006
+    TER006 --> TER007[TER-007: Production]
 
-    style A fill:#f9f,stroke:#333,stroke-width:2px
-    style B fill:#f9f,stroke:#333,stroke-width:2px
-    style C fill:#f9f,stroke:#333,stroke-width:2px
-    style D fill:#f9f,stroke:#333,stroke-width:2px
+    TER005 --> ANS001[ANS-001: Role Structure]
+    ANS001 --> ANS002[ANS-002: MicroK8s Base]
+    ANS002 --> ANS003[ANS-003: HA Cluster]
+    ANS003 --> ANS004[ANS-004: Rancher]
+    ANS003 --> ANS005[ANS-005: ArgoCD]
+
+    ANS003 --> DEP001[DEP-001: Deploy Script]
+    DEP001 --> DEP002[DEP-002: Validation]
+    DEP002 --> DEP003[DEP-003: Monitoring]
+
+    style TER001 fill:#f9f,stroke:#333,stroke-width:2px
+```
+
+## Execution Timeline
+
+```mermaid
+gantt
+    title MicroK8s Infrastructure Implementation
+    dateFormat YYYY-MM-DD
+    section Week 1-3: Terraform
+    TER-001 Base Structure       :t1, 2025-01-20, 3h
+    TER-002 Vendor Data          :t2, after t1, 4h
+    TER-003 Master Module        :t3, after t2, 3h
+    TER-004 Worker Module        :t4, after t2, 2h
+    TER-005 Dev Environment      :t5, after t3, 2h
+    section Week 3-5: Ansible
+    ANS-001 Role Structure       :a1, after t5, 2h
+    ANS-002 MicroK8s Base        :a2, after a1, 3h
+    ANS-003 HA Cluster           :a3, after a2, 4h
+    ANS-004 Rancher              :a4, after a3, 3h
+    ANS-005 ArgoCD               :a5, after a3, 3h
+    section Week 5-7: Deployment
+    DEP-001 Deploy Script        :d1, after a3, 3h
+    DEP-002 Validation           :d2, after d1, 3h
+    DEP-003 Monitoring           :d3, after d2, 4h
 ```
 
 ## Critical Path
 
-The minimum time to completion follows this sequence:
+The minimum time to a functional MicroK8s cluster:
 
-1. **Critical Fixes** (Day 1-2):
-   - CI-001: Fix GitHub workflow paths for documentation generation
-   - IaC-001: Consolidate duplicate Ansible logic into roles
-   - DOCS-001: Clean up terraform directory documentation
+1. **Week 1-2**: Foundation
 
-2. **Configuration Refactoring** (Day 3-4):
-   - CONFIG-001: Create Terraform outputs → Ansible inventory integration
-   - CONFIG-002: Enable all pre-commit hooks for code quality
-   - IaC-002: Implement empty Ansible roles properly
+   - TER-001: Create base structure (3h)
+   - TER-002: Vendor data configuration (4h)
+   - TER-003: Master module (3h)
 
-3. **Validation & Security** (Day 5-6):
-   - TEST-001: Add post-deployment validation
-   - SEC-001: Secure sensitive variables with Ansible Vault
-   - IaC-003: Make configurations more flexible
+2. **Week 2-3**: Environment Setup
 
-**Critical Path Duration**: ~10 hours for core functionality fixes
+   - TER-005: Development environment (2h)
+   - Single-node testing and validation
+
+3. **Week 3-4**: Ansible Configuration
+
+   - ANS-001: Role structure (2h)
+   - ANS-002: MicroK8s base (3h)
+   - ANS-003: HA cluster formation (4h)
+
+4. **Week 5**: Deployment Pipeline
+   - DEP-001: Deployment script (3h)
+   - DEP-002: Validation (3h)
+
+**Critical Path Duration**: ~24 hours for minimal viable deployment
 
 ## Risk Register
 
-| Risk                                    | Probability | Impact | Mitigation                                |
-| --------------------------------------- | ----------- | ------ | ----------------------------------------- |
-| Breaking existing deployments          | Medium      | High   | Test changes in isolated environment      |
-| Terraform state conflicts              | Low         | High   | Backup state before major changes         |
-| Ansible role refactoring complexity    | Medium      | Medium | Incremental migration, test each role     |
-| Network configuration misalignment     | Low         | High   | Validate IP ranges don't conflict         |
+| Risk                                        | Probability | Impact | Mitigation                             |
+| ------------------------------------------- | ----------- | ------ | -------------------------------------- |
+| Vendor data complexity causes boot failures | Medium      | High   | Incremental testing, fallback configs  |
+| Network segmentation issues                 | Medium      | High   | Start simple, add complexity gradually |
+| Ansible role compatibility                  | Low         | Medium | Maintain backward compatibility        |
+| MicroK8s version conflicts                  | Low         | Medium | Pin versions, test upgrades            |
+| Terraform state corruption                  | Low         | High   | Use workspaces, regular backups        |
 
 ## Success Criteria
 
-- [ ] **CI/CD Fixed**: GitHub workflows run successfully on PRs
-- [ ] **No Duplication**: Single source of truth for all configurations
-- [ ] **Roles Functional**: All Ansible roles properly implemented and tested
-- [ ] **Validation Complete**: Automated health checks confirm cluster deployment
-- [ ] **Documentation Current**: Architecture diagrams and guides up-to-date
+- [ ] **Infrastructure as Code**: All components version controlled
+- [ ] **Automated Deployment**: Single command cluster creation
+- [ ] **HA Configuration**: 3+ node clusters with automatic failover
+- [ ] **Environment Parity**: Dev/Staging/Prod with consistent tooling
+- [ ] **Validation Suite**: Automated testing at each stage
+- [ ] **Documentation**: Complete guides for operations
 
 ## Quick Commands
 
-### Infrastructure Workflow
+### Current State (Manual Process)
 
 ```bash
-# Terraform operations
-cd terraform
-mise run fmt              # Format Terraform files
-mise run prod-validate    # Validate configuration
-mise run plan            # Plan infrastructure changes
-mise run apply           # Apply infrastructure changes
-
-# Ansible operations
-cd ansible
-ansible-playbook -i inventory/hosts.yml playbooks/playbook.yml --check  # Dry run
-ansible-playbook -i inventory/hosts.yml playbooks/playbook.yml          # Deploy
-ansible-lint             # Check Ansible code quality
-
-# Validation
-mise run full-check      # Complete validation suite
-mise run ansible-lint    # Lint Ansible files
+# Separate terraform and ansible runs
+cd terraform/
+terraform apply
+# Manual ansible inventory creation
+cd ../ansible/
+ansible-playbook playbook.yml
 ```
 
-### Task Management
+### Target State (After Implementation)
 
 ```bash
-# Find ready tasks
-grep "🔄 Ready" tasks/INDEX.md
+# Single integrated deployment
+cd infrastructure-microk8s/
+./scripts/deploy.sh production
 
-# Check specific task
-cat tasks/iac/IaC-001-*.md
-
-# Update task status
-# Edit INDEX.md and change status indicators
+# Automated flow:
+# 1. Terraform provisions VMs with vendor_data
+# 2. Inventory auto-generated
+# 3. Ansible configures MicroK8s cluster
+# 4. Validation runs automatically
+# 5. Report generated
 ```
 
 ## Notes
 
 - Tasks marked 🔄 Ready can be started immediately
-- P0 tasks in Phase 1 are critical and block many other improvements
-- CONFIG-001 is a key dependency that will unblock multiple tasks
-- Consider using feature branches for major refactoring tasks
+- TER-001 is the only unblocked task - start here
+- Parallel work possible after TER-002 completes
+- Focus on development environment first for rapid iteration
+- Production deployment only after staging validation
 
 ## References
 
-- [Project README](../README.md)
-- [Terraform Documentation](../terraform/README.md)
-- [Ansible Roles](../ansible/roles/)
-- [Mise Configuration](../.mise.toml)
-
-## Task Categories
-
-- **CI**: CI/CD pipeline and automation fixes
-- **IaC**: Infrastructure as Code improvements (Terraform/Ansible)
-- **CONFIG**: Configuration management and consistency
-- **DOCS**: Documentation improvements
-- **TEST**: Testing and validation infrastructure
-- **SEC**: Security enhancements
+- [Planning Document](../docs/planning.md) - Comprehensive integration strategy
+- [Blueprint](../docs/blueprint.md) - MicroK8s architecture overview
+- [Current Infrastructure](../infrastructure/) - Reference Terraform patterns
+- [Ansible Setup](../ansible/) - Existing MicroK8s playbooks
+- [Task Template](template.md) - For creating new tasks
 
 ---
 
 _Use [README.md](README.md) for task system documentation_
-_Individual task details in respective task files_
+_Individual task details in respective directories_
