@@ -31,14 +31,16 @@ markdownlint-cli2 = "0.18.1"
 
 [tasks.fmt]
 description = "Format all Terraform files recursively"
+dir = "terraform"
 run = "terraform fmt -recursive"
 
 [tasks.yaml-fmt]
 description = "Format YAML files"
-run = "mise exec -- yamlfmt ."
+run = "yamlfmt ."
 
 [tasks.fmt-check]
 description = "Check formatting recursively (non-mutating, CI-friendly)"
+dir = "terraform"
 run = "terraform fmt -recursive -check -diff"
 
 [tasks.fmt-all]
@@ -58,7 +60,7 @@ run = "./scripts/generate-docs.sh"
 [tasks.docs-check]
 description = "Check if Terraform documentation is up-to-date"
 dir = "terraform"
-run = "terraform-docs --config .terraform-docs.yml --output-check ."
+run = "terraform-docs --config ../.terraform-docs.yml --output-check ."
 
 [tasks.lint-prod]
 description = "Run TFLint on Terraform configuration"
@@ -84,15 +86,15 @@ run = "infisical scan"
 
 [tasks.shellcheck]
 description = "Lint shell scripts"
-run = "find scripts -name '*.sh' -exec mise exec -- shellcheck {} +"
+run = "find scripts -name '*.sh' -exec shellcheck {} +"
 
 [tasks.yaml-lint]
 description = "Lint YAML files"
-run = "mise exec -- yamllint ."
+run = "yamllint ."
 
 [tasks.markdown-lint]
 description = "Lint Markdown files"
-run = "mise exec -- markdownlint-cli2 '**/*.md'"
+run = "markdownlint-cli2 '**/*.md'"
 
 [tasks.ansible-lint]
 description = "Lint Ansible files"

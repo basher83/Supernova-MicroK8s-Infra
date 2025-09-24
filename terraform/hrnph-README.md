@@ -229,7 +229,7 @@ sudo killall -HUP mDNSResponder
 
 # 📂 Important File Overview
 
-This section explains the key files in this repository, what they do, and why they matter.  
+This section explains the key files in this repository, what they do, and why they matter.
 **If you're new to Terraform or Ansible**, read this carefully before editing!
 
 | File / Folder                | Purpose                                                                                                                                                                       |

@@ -1,6 +1,5 @@
 # Ansible Variables for Supernova-MicroK8s-Infra
 # These variables define network configuration and hostnames used throughout the playbooks
-
 # Network Configuration
 home_network_gateway: "192.168.1.1"
 cluster_network_gateway: "192.168.3.1"
