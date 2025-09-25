@@ -1,6 +1,6 @@
 ---
 Task: <Brief description - be specific>
-Task ID: <SEP-XXX or ANS-XXX - use next sequential number>
+Task ID: <[PREFIX]-XXX - use your project-specific prefix and sequential number>
 Priority: <P0|P1|P2 - P0=Critical, P1=Important, P2=Nice-to-have>
 Estimated Time: <X hours - realistic estimate>
 Dependencies: <Task IDs or "None" - explicit dependencies>
@@ -45,15 +45,19 @@ Updated: <Run: date +"%Y-%m-%d" - update when status changes>
 <Commands or procedures to verify task completion>
 
 ```bash
-# Example validation commands relevant to the task type
-# For SEP tasks: packer validate, tflint, terraform plan
-# For ANS tasks: ansible-playbook --syntax-check, ansible-lint,molecule test
+# Replace with validation commands specific to your tech stack
+# Examples:
+# For web apps: npm run build, npm run lint, npm run test
+# For databases: dbt build, sqlfluff lint, pg_dump --schema-only
+# For IaC: terraform validate, packer validate, ansible-lint
+# For containers: docker build, docker-compose up, k8s validate
 ```
 
 Expected output:
 
 - <What successful validation looks like>
 - <Key indicators of completion>
+- <Exit codes or status messages to expect>
 
 ## Notes
 

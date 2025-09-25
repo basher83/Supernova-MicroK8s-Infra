@@ -1,216 +1,246 @@
 ---
-Last Updated: 2025-09-20
-Total Tasks: 15
-Total Estimated Time: 45 hours
+Last Updated: 2025-01-26
+Total Tasks: 12
+Total Estimated Time: 24 hours
 Overall Completion: 0%
-Current Phase: Terraform Setup
+Current Phase: Basic Cluster Setup
 ---
 
-# Task Tracker - MicroK8s Infrastructure Deployment
+# Task Tracker - MicroK8s Homelab Learning Journey
 
 ## Executive Summary
 
-This tracker manages the implementation of a unified, automated MicroK8s deployment system for Proxmox. The project integrates sophisticated Terraform patterns with MicroK8s deployment logic, transforming scattered infrastructure code into a cohesive, production-ready solution as outlined in [Planning Document](../docs/planning.md).
+This tracker manages the hands-on learning journey for building a MicroK8s homelab cluster. Focus on learning Kubernetes concepts through practical implementation rather than production deployment. Tasks follow the 4-phase learning roadmap from basic cluster setup through advanced operations.
 
 ## Current Status Overview
 
 ### Phase Progress
 
-| Phase                 | Completion | Status     |
-| --------------------- | ---------- | ---------- |
-| Terraform Setup       | 0%         | 🔄 Ready   |
-| Ansible Configuration | 0%         | ⏸️ Planned |
-| Deployment Pipeline   | 0%         | ⏸️ Planned |
+| Phase                  | Completion | Status     |
+| ---------------------- | ---------- | ---------- |
+| Basic Cluster Setup    | 0%         | 🔄 Ready   |
+| External Access        | 0%         | ⏸️ Planned |
+| Application Deployment | 0%         | ⏸️ Planned |
+| Advanced Operations    | 0%         | ⏸️ Planned |
 
 ### Quick Metrics
 
-- **Critical Path Duration**: ~20 hours (TER + initial ANS tasks)
-- **Total Effort Required**: ~45 hours
-- **Target Completion**: 7 weeks from start
-- **Current Blockers**: None - ready to begin
+- **Critical Path Duration**: ~6 hours (SETUP tasks)
+- **Total Effort Required**: ~24 hours
+- **Target Completion**: 4 weeks (learn at your own pace)
+- **Blockers**: None currently - ready to start learning!
 
-## Phase 1: Terraform Infrastructure Setup
+## Phase 1: Basic Cluster Setup (Week 1)
 
-### Foundation Tasks (Week 1-3)
+### Core Learning Tasks (P0)
 
-| Task ID                                                      | Title                                | Priority | Duration | Dependencies    | Status     |
-| ------------------------------------------------------------ | ------------------------------------ | -------- | -------- | --------------- | ---------- |
-| [TER-001](terraform-setup/TER-001-create-base-structure.md)  | Create Base Infrastructure Structure | P0       | 3h       | None            | 🔄 Ready   |
-| [TER-002](terraform-setup/TER-002-vendor-data-microk8s.md)   | Develop MicroK8s Vendor Data         | P0       | 4h       | TER-001         | ⏸️ Blocked |
-| [TER-003](terraform-setup/TER-003-master-module.md)          | Create Master Node Module            | P0       | 3h       | TER-002         | ⏸️ Blocked |
-| [TER-004](terraform-setup/TER-004-worker-module.md)          | Create Worker Node Module            | P1       | 2h       | TER-002         | ⏸️ Blocked |
-| [TER-005](terraform-setup/TER-005-dev-environment.md)        | Configure Development Environment    | P0       | 2h       | TER-003         | ⏸️ Blocked |
-| [TER-006](terraform-setup/TER-006-staging-environment.md)    | Configure Staging Environment        | P1       | 3h       | TER-003,TER-004 | ⏸️ Blocked |
-| [TER-007](terraform-setup/TER-007-production-environment.md) | Configure Production Environment     | P1       | 3h       | TER-006         | ⏸️ Blocked |
+| Task ID                                            | Title                                      | Priority | Duration | Dependencies | Status     |
+| -------------------------------------------------- | ------------------------------------------ | -------- | -------- | ------------ | ---------- |
+| [SETUP-001](setup/SETUP-001-deploy-vms.md)         | Deploy 3 Ubuntu VMs on Proxmox             | P0       | 2h       | None         | 🔄 Ready   |
+| [SETUP-002](setup/SETUP-002-install-microk8s.md)   | Install MicroK8s on all nodes              | P0       | 1h       | SETUP-001    | ⏸️ Blocked |
+| [SETUP-003](setup/SETUP-003-form-ha-cluster.md)    | Form HA cluster (3 nodes)                  | P0       | 2h       | SETUP-002    | ⏸️ Blocked |
+| [SETUP-004](setup/SETUP-004-enable-core-addons.md) | Enable core addons (dns, storage, ingress) | P0       | 1h       | SETUP-003    | ⏸️ Blocked |
 
-**Phase 1 Total**: ~20 hours
+### Validation Tasks (P1)
 
-## Phase 2: Ansible Configuration
+| Task ID                                        | Title                 | Priority | Duration | Dependencies | Status     |
+| ---------------------------------------------- | --------------------- | -------- | -------- | ------------ | ---------- |
+| [SETUP-005](setup/SETUP-005-verify-cluster.md) | Verify cluster health | P1       | 1h       | SETUP-004    | ⏸️ Blocked |
 
-### MicroK8s Setup Tasks (Week 3-5)
+### Optimization (P2)
 
-| Task ID                                                        | Title                           | Priority | Duration | Dependencies | Status     |
-| -------------------------------------------------------------- | ------------------------------- | -------- | -------- | ------------ | ---------- |
-| [ANS-001](ansible-configuration/ANS-001-role-structure.md)     | Create Ansible Role Structure   | P0       | 2h       | TER-005      | ⏸️ Blocked |
-| [ANS-002](ansible-configuration/ANS-002-microk8s-base.md)      | MicroK8s Base Installation Role | P0       | 3h       | ANS-001      | ⏸️ Blocked |
-| [ANS-003](ansible-configuration/ANS-003-ha-cluster.md)         | HA Cluster Formation Role       | P0       | 4h       | ANS-002      | ⏸️ Blocked |
-| [ANS-004](ansible-configuration/ANS-004-rancher-deployment.md) | Rancher Deployment Role         | P1       | 3h       | ANS-003      | ⏸️ Blocked |
-| [ANS-005](ansible-configuration/ANS-005-argocd-deployment.md)  | ArgoCD Deployment Role          | P1       | 3h       | ANS-003      | ⏸️ Blocked |
+| Task ID                                      | Title              | Priority | Duration | Dependencies | Status     |
+| -------------------------------------------- | ------------------ | -------- | -------- | ------------ | ---------- |
+| [[PREFIX]-006]([category]/[PREFIX]-006-*.md) | <Brief task title> | P2       | Xh       | [PREFIX]-005 | ⏸️ Blocked |
 
-**Phase 2 Total**: ~15 hours
+**Phase 1 Total**: ~7 hours
 
-## Phase 3: Deployment Pipeline
+## Phase 2: External Access & Services (Week 2)
 
-### Automation Tasks (Week 5-7)
+### Core Learning Tasks (P0)
 
-| Task ID                                              | Title                         | Priority | Duration | Dependencies | Status     |
-| ---------------------------------------------------- | ----------------------------- | -------- | -------- | ------------ | ---------- |
-| [DEP-001](deployment/DEP-001-deployment-script.md)   | Create Main Deployment Script | P0       | 3h       | ANS-003      | ⏸️ Blocked |
-| [DEP-002](deployment/DEP-002-validation-playbook.md) | Cluster Validation Playbook   | P0       | 3h       | DEP-001      | ⏸️ Blocked |
-| [DEP-003](deployment/DEP-003-monitoring-setup.md)    | Monitoring Integration        | P2       | 4h       | DEP-002      | ⏸️ Blocked |
+| Task ID                                               | Title                                | Priority | Duration | Dependencies | Status     |
+| ----------------------------------------------------- | ------------------------------------ | -------- | -------- | ------------ | ---------- |
+| [ACCESS-001](access/ACCESS-001-configure-metallb.md)  | Configure MetalLB for load balancing | P0       | 2h       | SETUP-005    | ⏸️ Blocked |
+| [ACCESS-002](access/ACCESS-002-setup-cert-manager.md) | Set up cert-manager for TLS          | P0       | 2h       | ACCESS-001   | ⏸️ Blocked |
+| [ACCESS-003](access/ACCESS-003-deploy-dashboard.md)   | Deploy Kubernetes dashboard          | P0       | 1h       | ACCESS-002   | ⏸️ Blocked |
 
-**Phase 3 Total**: ~10 hours
+### Validation Tasks (P1)
+
+| Task ID                                                 | Title                         | Priority | Duration | Dependencies | Status     |
+| ------------------------------------------------------- | ----------------------------- | -------- | -------- | ------------ | ---------- |
+| [ACCESS-004](access/ACCESS-004-test-external-access.md) | Test external access with TLS | P1       | 1h       | ACCESS-003   | ⏸️ Blocked |
+
+**Phase 2 Total**: ~6 hours
+
+## Phase 3: Application Deployment (Week 3)
+
+### Core Learning Tasks (P0)
+
+| Task ID                                               | Title                                 | Priority | Duration | Dependencies | Status     |
+| ----------------------------------------------------- | ------------------------------------- | -------- | -------- | ------------ | ---------- |
+| [APPS-001](apps/APPS-001-deploy-sample-app.md)        | Deploy sample application             | P0       | 2h       | ACCESS-004   | ⏸️ Blocked |
+| [APPS-002](apps/APPS-002-configure-ingress.md)        | Configure ingress for external access | P0       | 1h       | APPS-001     | ⏸️ Blocked |
+| [APPS-003](apps/APPS-003-setup-persistent-storage.md) | Set up persistent storage             | P0       | 2h       | APPS-002     | ⏸️ Blocked |
+
+### Validation Tasks (P1)
+
+| Task ID                                   | Title                    | Priority | Duration | Dependencies | Status     |
+| ----------------------------------------- | ------------------------ | -------- | -------- | ------------ | ---------- |
+| [APPS-004](apps/APPS-004-test-scaling.md) | Test application scaling | P1       | 1h       | APPS-003     | ⏸️ Blocked |
+
+**Phase 3 Total**: ~6 hours
+
+## Phase 4: Advanced Operations & GitOps (Future)
+
+### Core Learning Tasks (P0)
+
+| Task ID                                    | Title                     | Priority | Duration | Dependencies | Status     |
+| ------------------------------------------ | ------------------------- | -------- | -------- | ------------ | ---------- |
+| [OPS-001](ops/OPS-001-explore-argocd.md)   | Explore ArgoCD for GitOps | P0       | 2h       | APPS-004     | ⏸️ Blocked |
+| [OPS-002](ops/OPS-002-setup-monitoring.md) | Set up monitoring stack   | P0       | 2h       | OPS-001      | ⏸️ Blocked |
+
+**Phase 4 Total**: ~4 hours
 
 ## Task Dependencies
 
 ```mermaid
 graph LR
-    TER001[TER-001: Base Structure] --> TER002[TER-002: Vendor Data]
-    TER002 --> TER003[TER-003: Master Module]
-    TER002 --> TER004[TER-004: Worker Module]
-    TER003 --> TER005[TER-005: Dev Env]
-    TER003 --> TER006[TER-006: Staging]
-    TER004 --> TER006
-    TER006 --> TER007[TER-007: Production]
+    SETUP001[SETUP-001: Deploy VMs] --> SETUP002[SETUP-002: Install MicroK8s]
+    SETUP002 --> SETUP003[SETUP-003: Form HA Cluster]
+    SETUP003 --> SETUP004[SETUP-004: Enable Addons]
+    SETUP004 --> SETUP005[SETUP-005: Verify Cluster]
 
-    TER005 --> ANS001[ANS-001: Role Structure]
-    ANS001 --> ANS002[ANS-002: MicroK8s Base]
-    ANS002 --> ANS003[ANS-003: HA Cluster]
-    ANS003 --> ANS004[ANS-004: Rancher]
-    ANS003 --> ANS005[ANS-005: ArgoCD]
+    SETUP005 --> ACCESS001[ACCESS-001: Configure MetalLB]
+    ACCESS001 --> ACCESS002[ACCESS-002: Setup cert-manager]
+    ACCESS002 --> ACCESS003[ACCESS-003: Deploy Dashboard]
+    ACCESS003 --> ACCESS004[ACCESS-004: Test External Access]
 
-    ANS003 --> DEP001[DEP-001: Deploy Script]
-    DEP001 --> DEP002[DEP-002: Validation]
-    DEP002 --> DEP003[DEP-003: Monitoring]
+    ACCESS004 --> APPS001[APPS-001: Deploy Sample App]
+    APPS001 --> APPS002[APPS-002: Configure Ingress]
+    APPS002 --> APPS003[APPS-003: Setup Storage]
+    APPS003 --> APPS004[APPS-004: Test Scaling]
 
-    style TER001 fill:#f9f,stroke:#333,stroke-width:2px
+    APPS004 --> OPS001[OPS-001: Explore ArgoCD]
+    OPS001 --> OPS002[OPS-002: Setup Monitoring]
+
+    style SETUP001 fill:#f9f,stroke:#333,stroke-width:2px
+    style SETUP002 fill:#f9f,stroke:#333,stroke-width:2px
+    style SETUP003 fill:#f9f,stroke:#333,stroke-width:2px
 ```
 
 ## Execution Timeline
 
 ```mermaid
 gantt
-    title MicroK8s Infrastructure Implementation
+    title MicroK8s Homelab Learning Journey
     dateFormat YYYY-MM-DD
-    section Week 1-3: Terraform
-    TER-001 Base Structure       :t1, 2025-01-20, 3h
-    TER-002 Vendor Data          :t2, after t1, 4h
-    TER-003 Master Module        :t3, after t2, 3h
-    TER-004 Worker Module        :t4, after t2, 2h
-    TER-005 Dev Environment      :t5, after t3, 2h
-    section Week 3-5: Ansible
-    ANS-001 Role Structure       :a1, after t5, 2h
-    ANS-002 MicroK8s Base        :a2, after a1, 3h
-    ANS-003 HA Cluster           :a3, after a2, 4h
-    ANS-004 Rancher              :a4, after a3, 3h
-    ANS-005 ArgoCD               :a5, after a3, 3h
-    section Week 5-7: Deployment
-    DEP-001 Deploy Script        :d1, after a3, 3h
-    DEP-002 Validation           :d2, after d1, 3h
-    DEP-003 Monitoring           :d3, after d2, 4h
+    section Phase 1: Basic Setup
+    SETUP-001 Deploy VMs :s1, 2025-01-27, 2h
+    SETUP-002 Install MicroK8s :s2, after s1, 1h
+    SETUP-003 Form HA Cluster :s3, after s2, 2h
+    SETUP-004 Enable Core Addons :s4, after s3, 1h
+    SETUP-005 Verify Cluster :s5, after s4, 1h
+    section Phase 2: External Access
+    ACCESS-001 Configure MetalLB :a1, after s5, 2h
+    ACCESS-002 Setup cert-manager :a2, after a1, 2h
+    ACCESS-003 Deploy Dashboard :a3, after a2, 1h
+    ACCESS-004 Test External Access :a4, after a3, 1h
+    section Phase 3: Applications
+    APPS-001 Deploy Sample App :p1, after a4, 2h
+    APPS-002 Configure Ingress :p2, after p1, 1h
+    APPS-003 Setup Storage :p3, after p2, 2h
+    APPS-004 Test Scaling :p4, after p3, 1h
+    section Phase 4: Advanced (Future)
+    OPS-001 Explore ArgoCD :o1, after p4, 2h
+    OPS-002 Setup Monitoring :o2, after o1, 2h
 ```
 
 ## Critical Path
 
-The minimum time to a functional MicroK8s cluster:
+The learning journey follows this progressive sequence:
 
-1. **Week 1-2**: Foundation
+1. **Phase 1: Cluster Foundation** (~7 hours):
 
-   - TER-001: Create base structure (3h)
-   - TER-002: Vendor data configuration (4h)
-   - TER-003: Master module (3h)
+   - SETUP-001: Deploy 3 Ubuntu VMs on Proxmox
+   - SETUP-002: Install MicroK8s on all nodes
+   - SETUP-003: Form HA cluster with 3 nodes
+   - SETUP-004: Enable core addons (DNS, storage, ingress)
+   - SETUP-005: Verify cluster health
 
-2. **Week 2-3**: Environment Setup
+2. **Phase 2: External Access** (~6 hours):
 
-   - TER-005: Development environment (2h)
-   - Single-node testing and validation
+   - ACCESS-001: Configure MetalLB for load balancing
+   - ACCESS-002: Set up cert-manager for TLS certificates
+   - ACCESS-003: Deploy Kubernetes dashboard
+   - ACCESS-004: Test external access with TLS
 
-3. **Week 3-4**: Ansible Configuration
+3. **Phase 3: Application Deployment** (~6 hours):
 
-   - ANS-001: Role structure (2h)
-   - ANS-002: MicroK8s base (3h)
-   - ANS-003: HA cluster formation (4h)
+   - APPS-001: Deploy sample application
+   - APPS-002: Configure ingress for external access
+   - APPS-003: Set up persistent storage
+   - APPS-004: Test application scaling
 
-4. **Week 5**: Deployment Pipeline
-   - DEP-001: Deployment script (3h)
-   - DEP-002: Validation (3h)
+4. **Phase 4: Advanced Operations** (~4 hours):
 
-**Critical Path Duration**: ~24 hours for minimal viable deployment
+   - OPS-001: Explore ArgoCD for GitOps
+   - OPS-002: Set up monitoring stack
+
+**Critical Path Duration**: ~23 hours for complete learning journey
 
 ## Risk Register
 
-| Risk                                        | Probability | Impact | Mitigation                             |
-| ------------------------------------------- | ----------- | ------ | -------------------------------------- |
-| Vendor data complexity causes boot failures | Medium      | High   | Incremental testing, fallback configs  |
-| Network segmentation issues                 | Medium      | High   | Start simple, add complexity gradually |
-| Ansible role compatibility                  | Low         | Medium | Maintain backward compatibility        |
-| MicroK8s version conflicts                  | Low         | Medium | Pin versions, test upgrades            |
-| Terraform state corruption                  | Low         | High   | Use workspaces, regular backups        |
+| Risk                                 | Probability | Impact | Mitigation                                        |
+| ------------------------------------ | ----------- | ------ | ------------------------------------------------- |
+| VM deployment issues on Proxmox      | Medium      | High   | Start with single VM, verify Proxmox access first |
+| Network connectivity problems        | Medium      | High   | Test basic connectivity before cluster formation  |
+| MicroK8s addon conflicts             | Low         | Medium | Enable addons one at a time, test after each      |
+| Certificate issues with cert-manager | Low         | Medium | Use self-signed certs initially for testing       |
+| Storage configuration errors         | Low         | Medium | Test with simple hostPath before advanced storage |
 
 ## Success Criteria
 
-- [ ] **Infrastructure as Code**: All components version controlled
-- [ ] **Automated Deployment**: Single command cluster creation
-- [ ] **HA Configuration**: 3+ node clusters with automatic failover
-- [ ] **Environment Parity**: Dev/Staging/Prod with consistent tooling
-- [ ] **Validation Suite**: Automated testing at each stage
-- [ ] **Documentation**: Complete guides for operations
+- [ ] **Phase 1 Complete**: Working 3-node HA MicroK8s cluster with core addons
+- [ ] **Phase 2 Complete**: External access working via MetalLB and TLS
+- [ ] **Phase 3 Complete**: Sample application deployed and accessible
+- [ ] **Phase 4 Complete**: GitOps and monitoring explored (optional)
 
 ## Quick Commands
 
-### Current State (Manual Process)
+### Cluster Management
 
 ```bash
-# Separate terraform and ansible runs
-cd terraform/
-terraform apply
-# Manual ansible inventory creation
-cd ../ansible/
-ansible-playbook playbook.yml
-```
+# Check cluster status
+uv run ansible-playbook playbooks/examples/quick-status.yml
 
-### Target State (After Implementation)
+# Access cluster
+microk8s kubectl get nodes
+microk8s kubectl get pods -A
 
-```bash
-# Single integrated deployment
-cd infrastructure-microk8s/
-./scripts/deploy.sh production
+# Enable additional addons
+microk8s enable dashboard metallb cert-manager
 
-# Automated flow:
-# 1. Terraform provisions VMs with vendor_data
-# 2. Inventory auto-generated
-# 3. Ansible configures MicroK8s cluster
-# 4. Validation runs automatically
-# 5. Report generated
+# Access dashboard (after enabling)
+microk8s kubectl port-forward -n kube-system service/kubernetes-dashboard 10443:443
 ```
 
 ## Notes
 
-- Tasks marked 🔄 Ready can be started immediately
-- TER-001 is the only unblocked task - start here
-- Parallel work possible after TER-002 completes
-- Focus on development environment first for rapid iteration
-- Production deployment only after staging validation
+- Tasks marked 🔄 Ready can be started immediately - begin with SETUP-001
+- This is a **learning journey**, not a production deployment
+- Go at your own pace - each phase builds understanding
+- Document what you learn in each task for future reference
+- The goal is understanding, not speed
 
 ## References
 
-- [Planning Document](../docs/planning.md) - Comprehensive integration strategy
-- [Blueprint](../docs/blueprint.md) - MicroK8s architecture overview
-- [Current Infrastructure](../infrastructure/) - Reference Terraform patterns
-- [Ansible Setup](../ansible/) - Existing MicroK8s playbooks
-- [Task Template](template.md) - For creating new tasks
+- [Learning Roadmap](../../docs/learning-roadmap.md) - Your complete learning guide
+- [Setup Guide](../../docs/setup-guide.md) - Detailed MicroK8s installation
+- [Ansible Standards](../../docs/standards/ansible-standards.md) - Automation best practices
+- [Inspiration](../../docs/inspiration.md) - Alternative approaches
 
 ---
 
 _Use [README.md](README.md) for task system documentation_
-_Individual task details in respective directories_
+_Start with SETUP-001: Deploy 3 Ubuntu VMs on Proxmox_
