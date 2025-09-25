@@ -57,8 +57,8 @@ Tasks are organized by category in subdirectories:
 
 This task system is designed to work with any software project and can be adapted to various tech stacks:
 
-- **Task Tracker**: See `path/to/tasks/INDEX.md` for overall progress
-- **Template**: Use `template.md` for creating new tasks
+- **Task Tracker**: See `tasks/INDEX.md` for overall progress
+- **Template**: Use `tasks/template.md` for creating new tasks
 - **Status Tracking**: Tasks use standard status indicators (🔄 Ready, ⏸️ Blocked, 🚧 In Progress, ✅ Complete)
 
 ## Tech Stack Validation Patterns
@@ -120,7 +120,7 @@ docker-compose up        # Test full stack locally
 - Read the task file from @$ARGUMENTS
 - Identify task category from ID prefix (DEV, FEAT, BUG, DOCS, TEST, PERF, SEC, REFACTOR)
 - Review prerequisites and dependencies
-- Check task status in `path/to/tasks/INDEX.md`
+- Check task status in `tasks/INDEX.md`
 
 ### 2. Pre-flight Checks
 
@@ -129,7 +129,7 @@ docker-compose up        # Test full stack locally
 - Verify development environment is set up
 - Check for required dependencies and tools
 - Ensure build system is working
-- Review related documentation in `project-root/`
+- Review related documentation in `docs/INDEX.md`
 
 **For Feature Tasks (FEAT):**
 
@@ -207,7 +207,7 @@ Validation commands should be customized for your specific tech stack. Common pa
 2. Run final validation suite
 3. Update task status in:
    - Task file header (Status: ✅ Complete)
-   - `path/to/tasks/INDEX.md` (update table and percentage)
+   - `tasks/INDEX.md` (update table and percentage)
 4. Check if any dependent tasks are now unblocked
 5. Report completion with summary of changes
 
@@ -241,7 +241,7 @@ Validation commands should be customized for your specific tech stack. Common pa
 ```text
 .
 ├── [project-root]/                        # Your project root directory
-│   └── path/to/tasks/                     # Task management system (customizable location)
+│   └── tasks/                     # Task management system (customizable location)
 │       ├── INDEX.md                       # Active task tracker and progress dashboard
 │       ├── template.md                    # Task file template
 │       ├── [categories]/                  # Task category directories (DEV, FEAT, BUG, etc.)
@@ -253,8 +253,6 @@ Validation commands should be customized for your specific tech stack. Common pa
 ├── [documentation]/                       # Project documentation
 └── [other-directories]/                   # Project-specific directories
 ```
-
-**Note**: The task system works regardless of your project structure. Place the `tasks/` directory anywhere in your repository that makes sense for your project organization.
 
 ## Quick Reference
 

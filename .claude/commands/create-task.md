@@ -56,6 +56,7 @@ Edit the new task file with:
 - **Success Criteria**: Measurable validation points (avoid over-engineering)
 - **Validation**: Commands to verify completion (use existing tools when possible)
 - **Dependencies**: Any task IDs this depends on
+- **Created/Updated Dates**: Run `date +"%Y-%m-%d"` to get current date for Created/Updated fields
 
 ### 4. Update Task Tracker
 
