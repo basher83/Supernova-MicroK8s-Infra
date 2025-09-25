@@ -1,7 +1,7 @@
 provider "proxmox" {
   endpoint = var.proxmox_endpoint
-  username = "root@pam"
-  password = var.pm_password
+  username = var.proxmox_username
+  password = var.proxmox_password
   insecure = true
 
   ssh {

@@ -1,42 +1,49 @@
-variable "pm_password" {}
-variable "template_id" {}
-variable "target_node" {}
-variable "ssh_public_key" {}
-variable "vmbr_name" {
-  default = "vmbr1"
-}
-variable "cluster_vms" {
-  type = list(object({
-    name   = string
-    ip     = string
-    cores  = number
-    memory = number
-    disk   = number
-  }))
+# Environment
+variable "environment" {
+  description = "Environment name"
+  type        = string
+  default     = "homelab"
 }
 
-variable "jumpbox_address" {
-  default = "192.168.1.240/24"
-}
-
-# Network Configuration
+# Proxmox Configuration
 variable "proxmox_endpoint" {
   description = "Proxmox API endpoint"
   type        = string
   default     = "https://192.168.1.100:8006/"
 }
 
+variable "proxmox_username" {
+  description = "Proxmox username"
+  type        = string
+  default     = "root@pam"
+}
+
+variable "proxmox_password" {
+  description = "Proxmox password"
+  type        = string
+  sensitive   = true
+}
+
+variable "target_node" {
+  description = "Proxmox node to deploy VMs on"
+  type        = string
+}
+
+variable "template_id" {
+  description = "ID of the VM template to clone"
+  type        = number
+}
+
+# Network Configuration
 variable "home_network" {
   description = "Home network configuration"
   type = object({
-    gateway     = string
-    bridge      = string
-    cidr_suffix = string
+    gateway = string
+    bridge  = string
   })
   default = {
-    gateway     = "192.168.1.1"
-    bridge      = "vmbr0"
-    cidr_suffix = "/24"
+    gateway = "192.168.1.1"
+    bridge  = "vmbr0"
   }
 }
 
@@ -54,21 +61,47 @@ variable "cluster_network" {
   }
 }
 
-# Cluster Configuration
-variable "cluster_ips" {
-  description = "IP addresses for cluster nodes"
-  type = object({
-    masters = list(string)
-    workers = list(string)
-  })
-  default = {
-    masters = ["192.168.3.11", "192.168.3.12"]
-    workers = ["192.168.3.21", "192.168.3.22", "192.168.3.23"]
-  }
+# Jumpbox Configuration
+variable "jumpbox_home_ip" {
+  description = "Jumpbox IP on home network (with CIDR)"
+  type        = string
+  default     = "192.168.1.240/24"
 }
 
 variable "jumpbox_cluster_ip" {
-  description = "Jumpbox IP on cluster network"
+  description = "Jumpbox IP on cluster network (without CIDR)"
   type        = string
   default     = "192.168.3.250"
+}
+
+# VM Specifications
+variable "master_specs" {
+  description = "Specifications for master nodes"
+  type = object({
+    cpu_cores = number
+    memory    = number
+  })
+  default = {
+    cpu_cores = 2
+    memory    = 4096
+  }
+}
+
+variable "worker_specs" {
+  description = "Specifications for worker nodes"
+  type = object({
+    cpu_cores = number
+    memory    = number
+  })
+  default = {
+    cpu_cores = 2
+    memory    = 4096
+  }
+}
+
+# SSH Configuration
+variable "ssh_public_key" {
+  description = "SSH public key for VM access"
+  type        = string
+  default     = ""
 }

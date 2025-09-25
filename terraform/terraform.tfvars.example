@@ -1,38 +1,41 @@
 # Proxmox Configuration
-pm_password      = "xxxxxx"
-template_id      = "xxxxxx" # ID should be a number
-target_node      = "xxxxxx"
-ssh_public_key   = "xxxxxx" # can be generated with ssh-keygen -t rsa in case you don't have one
-proxmox_endpoint = "https://192.168.1.100:8006/" # Update to your Proxmox IP
+proxmox_endpoint = "https://192.168.1.100:8006/"  # Update to your Proxmox IP
+proxmox_username = "root@pam"
+proxmox_password = "your-proxmox-password"        # REQUIRED: Your Proxmox password
 
-# Network Configuration
+# Proxmox Node & Template
+target_node = "your-node-name"                    # REQUIRED: Your Proxmox node name
+template_id = 7024                                # From PREP-001: prod24 template
+
+# Environment
+environment = "homelab"
+
+# Network Configuration (adjust if your network differs)
 home_network = {
-  gateway     = "192.168.1.1"  # Your home router IP
-  bridge      = "vmbr0"        # Home network bridge
-  cidr_suffix = "/24"
+  gateway = "192.168.1.1"   # Your home router IP
+  bridge  = "vmbr0"          # Home network bridge in Proxmox
 }
 
 cluster_network = {
-  gateway     = "192.168.3.1"  # Cluster network gateway (Proxmox IP on cluster network)
-  bridge      = "vmbr1"        # Cluster network bridge
+  gateway     = "192.168.3.1"   # Cluster gateway (usually Proxmox IP on cluster network)
+  bridge      = "vmbr1"          # Cluster network bridge in Proxmox
   cidr_suffix = "/24"
 }
 
-# Cluster Configuration
-cluster_ips = {
-  masters = ["192.168.3.11", "192.168.3.12"]
-  workers = ["192.168.3.21", "192.168.3.22", "192.168.3.23"]
+# Jumpbox IPs
+jumpbox_home_ip    = "192.168.1.240/24"  # Jumpbox IP on home network
+jumpbox_cluster_ip = "192.168.3.250"     # Jumpbox IP on cluster network
+
+# VM Specifications (adjust based on available resources)
+master_specs = {
+  cpu_cores = 2
+  memory    = 4096  # 4GB RAM
 }
 
-jumpbox_address    = "192.168.1.240/24" # Jumpbox IP on home network
-jumpbox_cluster_ip = "192.168.3.250"    # Jumpbox IP on cluster network
+worker_specs = {
+  cpu_cores = 2
+  memory    = 4096  # 4GB RAM
+}
 
-# Cluster VMs Configuration
-# IP addresses will be automatically assigned from cluster_ips above
-cluster_vms = [
-  { name = "master-1", ip = "192.168.3.11", cores = 2, memory = 4096, disk = 32 },
-  { name = "master-2", ip = "192.168.3.12", cores = 2, memory = 4096, disk = 32 },
-  { name = "worker-1", ip = "192.168.3.21", cores = 2, memory = 4096, disk = 32 },
-  { name = "worker-2", ip = "192.168.3.22", cores = 2, memory = 4096, disk = 32 },
-  { name = "worker-3", ip = "192.168.3.23", cores = 2, memory = 4096, disk = 32 },
-]
+# SSH Configuration (optional - for cloud-init)
+ssh_public_key = ""  # Your SSH public key (if using cloud-init)
