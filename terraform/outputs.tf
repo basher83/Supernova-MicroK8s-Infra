@@ -39,7 +39,7 @@ output "network_info" {
   value = {
     home_network    = var.home_network
     cluster_network = var.cluster_network
-    node_ips        = [
+    node_ips = [
       for name, config in local.vm_instances :
       split("/", config.ip)[0]
       if config.role == "microk8s-node"
