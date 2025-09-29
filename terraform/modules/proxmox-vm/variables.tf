@@ -42,6 +42,54 @@ variable "cpu_type" {
   default     = "host"
 }
 
+variable "machine_type" {
+  description = "Machine type for VM"
+  type        = string
+  default     = "q35"
+}
+
+variable "bios_type" {
+  description = "BIOS type for VM"
+  type        = string
+  default     = "ovmf"
+}
+
+variable "efi_disk_enabled" {
+  description = "Enable EFI disk for UEFI boot"
+  type        = bool
+  default     = true
+}
+
+variable "vm_description" {
+  description = "Description for the VM"
+  type        = string
+  default     = "Managed by Terraform"
+}
+
+variable "disk_datastore_id" {
+  description = "Datastore ID for VM disks"
+  type        = string
+  default     = "local-lvm"
+}
+
+variable "disk_size" {
+  description = "Disk size in GB"
+  type        = number
+  default     = 32
+}
+
+variable "disk_iothread" {
+  description = "Enable I/O threads for disk"
+  type        = bool
+  default     = true
+}
+
+variable "disk_discard" {
+  description = "Enable discard for disk"
+  type        = string
+  default     = "on"
+}
+
 variable "memory" {
   description = "Memory in MB"
   type        = number

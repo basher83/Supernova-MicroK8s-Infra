@@ -34,3 +34,13 @@ node_specs = {
   cpu_cores = 2
   memory    = 4096  # 4GB RAM
 }
+
+# VM Configuration (optional - uses sensible defaults)
+machine_type    = "q35"              # Modern machine type for better performance
+bios_type       = "ovmf"             # UEFI BIOS for modern OS support
+efi_disk_enabled = true              # Enable EFI disk for UEFI boot
+vm_description  = "Managed by Terraform"
+disk_datastore_id = "local-lvm"      # Storage pool for VM disks
+disk_size       = 32                 # Disk size in GB
+disk_iothread   = true               # Enable I/O threads for better performance
+disk_discard    = "on"               # Enable TRIM/discard for SSDs
