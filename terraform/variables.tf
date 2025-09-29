@@ -24,6 +24,12 @@ variable "proxmox_insecure" {
   default     = true
 }
 
+variable "proxmox_ssh_username" {
+  description = "SSH username for connecting to Proxmox nodes"
+  type        = string
+  default     = "root"
+}
+
 variable "target_node" {
   description = "Proxmox node to deploy VMs on"
   type        = string
