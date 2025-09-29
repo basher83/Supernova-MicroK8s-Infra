@@ -30,23 +30,6 @@ variable "proxmox_ssh_username" {
   default     = "root"
 }
 
-variable "target_node_1" {
-  description = "First Proxmox node for VM deployment"
-  type        = string
-  default     = "pve01"
-}
-
-variable "target_node_2" {
-  description = "Second Proxmox node for VM deployment"
-  type        = string
-  default     = "pve02"
-}
-
-variable "target_node_3" {
-  description = "Third Proxmox node for VM deployment"
-  type        = string
-  default     = "pve03"
-}
 
 variable "template_id" {
   description = "ID of the VM template to clone"
@@ -125,11 +108,6 @@ variable "efi_disk_enabled" {
   default     = true
 }
 
-variable "vm_description" {
-  description = "Description for VMs"
-  type        = string
-  default     = "Managed by Terraform"
-}
 
 variable "disk_datastore_id" {
   description = "Datastore ID for VM disks"

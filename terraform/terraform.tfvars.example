@@ -4,11 +4,8 @@ pve_api_token        = "your-proxmox-api-token"       # REQUIRED: Your Proxmox A
 proxmox_insecure     = true                          # Set to false for production
 proxmox_ssh_username = "root"                        # SSH username for Proxmox node access
 
-# Proxmox Nodes & Template
-target_node_1 = "pve01"                           # First Proxmox node (for microk8s-1)
-target_node_2 = "pve02"                           # Second Proxmox node (for microk8s-2)
-target_node_3 = "pve03"                           # Third Proxmox node (for microk8s-3)
-template_id   = 7024                              # From PREP-001: prod24 template
+# Proxmox Template
+template_id = 7024                                # From PREP-001: prod24 template
 
 # Environment
 environment = "homelab"
@@ -39,7 +36,6 @@ node_specs = {
 machine_type    = "q35"              # Modern machine type for better performance
 bios_type       = "ovmf"             # UEFI BIOS for modern OS support
 efi_disk_enabled = true              # Enable EFI disk for UEFI boot
-vm_description  = "Managed by Terraform"
 disk_datastore_id = "local-lvm"      # Storage pool for VM disks
 disk_size       = 32                 # Disk size in GB
 disk_iothread   = true               # Enable I/O threads for better performance
