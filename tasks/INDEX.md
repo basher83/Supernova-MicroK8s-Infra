@@ -10,7 +10,7 @@ Current Phase: Prerequisites
 
 ## Executive Summary
 
-This tracker manages the deployment and learning journey for a MicroK8s homelab cluster using Infrastructure as Code. The repository contains Terraform for VM provisioning and Ansible for cluster configuration. The infrastructure consists of 6 VMs: 2 master nodes + 3 worker nodes + 1 jumpbox, with automated deployment of MicroK8s, Rancher, and ArgoCD.
+This tracker manages the deployment and learning journey for a MicroK8s homelab cluster using Infrastructure as Code. The repository contains Terraform for VM provisioning and Ansible for cluster configuration. The infrastructure consists of 4 VMs: 3 MicroK8s nodes + 1 jumpbox, with automated deployment of MicroK8s, Rancher, and ArgoCD.
 
 ## Task Categories
 
@@ -26,13 +26,13 @@ Aligned with the Infrastructure as Code approach and learning roadmap:
 
 ### Phase Progress
 
-| Phase                  | Completion | Status     |
-| ---------------------- | ---------- | ---------- |
+| Phase                  | Completion | Status         |
+| ---------------------- | ---------- | -------------- |
 | Prerequisites          | 50%        | 🚧 In Progress |
-| Infrastructure Deploy  | 0%         | ⏸️ Blocked |
-| External Access        | 0%         | ⏸️ Blocked |
-| Application Deployment | 0%         | ⏸️ Blocked |
-| Advanced Operations    | 0%         | ⏸️ Blocked |
+| Infrastructure Deploy  | 0%         | ⏸️ Blocked     |
+| External Access        | 0%         | ⏸️ Blocked     |
+| Application Deployment | 0%         | ⏸️ Blocked     |
+| Advanced Operations    | 0%         | ⏸️ Blocked     |
 
 ### Quick Metrics
 
@@ -45,10 +45,10 @@ Aligned with the Infrastructure as Code approach and learning roadmap:
 
 ### Required Setup (P0)
 
-| Task ID                                          | Title                                    | Priority | Duration | Dependencies | Status     |
-| ------------------------------------------------ | ---------------------------------------- | -------- | -------- | ------------ | ---------- |
-| [PREP-001](prep/PREP-001-create-vm-template.md) | Create Proxmox VM template from Ubuntu  | P0       | 1h       | None         | ✅ Complete |
-| [PREP-002](prep/PREP-002-configure-terraform.md) | Configure terraform.tfvars from example | P0       | 30m      | PREP-001     | 🔄 Ready   |
+| Task ID                                          | Title                                   | Priority | Duration | Dependencies | Status      |
+| ------------------------------------------------ | --------------------------------------- | -------- | -------- | ------------ | ----------- |
+| [PREP-001](prep/PREP-001-create-vm-template.md)  | Create Proxmox VM template from Ubuntu  | P0       | 1h       | None         | ✅ Complete |
+| [PREP-002](prep/PREP-002-configure-terraform.md) | Configure terraform.tfvars from example | P0       | 30m      | PREP-001     | 🔄 Ready    |
 
 **Phase 0 Total**: ~1.5 hours
 
@@ -56,11 +56,11 @@ Aligned with the Infrastructure as Code approach and learning roadmap:
 
 ### Automated Deployment (P0)
 
-| Task ID                                               | Title                                           | Priority | Duration | Dependencies | Status     |
-| ----------------------------------------------------- | ----------------------------------------------- | -------- | -------- | ------------ | ---------- |
-| [INFRA-001](infra/INFRA-001-terraform-deploy.md)      | Deploy 6 VMs via Terraform (2M+3W+1J)          | P0       | 30m      | PREP-002     | ⏸️ Blocked |
-| [INFRA-002](infra/INFRA-002-ansible-configure.md)     | Configure MicroK8s cluster via Ansible         | P0       | 1h       | INFRA-001    | ⏸️ Blocked |
-| [INFRA-003](infra/INFRA-003-verify-deployment.md)     | Verify cluster, Rancher, and ArgoCD deployment | P1       | 30m      | INFRA-002    | ⏸️ Blocked |
+| Task ID                                           | Title                                               | Priority | Duration | Dependencies | Status     |
+| ------------------------------------------------- | --------------------------------------------------- | -------- | -------- | ------------ | ---------- |
+| [INFRA-001](infra/INFRA-001-terraform-deploy.md)  | Deploy 4 VMs via Terraform (3 MicroK8s + 1 jumpbox) | P0       | 30m      | PREP-002     | ⏸️ Blocked |
+| [INFRA-002](infra/INFRA-002-ansible-configure.md) | Configure MicroK8s cluster via Ansible              | P0       | 1h       | INFRA-001    | ⏸️ Blocked |
+| [INFRA-003](infra/INFRA-003-verify-deployment.md) | Verify cluster, Rancher, and ArgoCD deployment      | P1       | 30m      | INFRA-002    | ⏸️ Blocked |
 
 **Phase 1 Total**: ~2 hours
 
@@ -68,11 +68,11 @@ Aligned with the Infrastructure as Code approach and learning roadmap:
 
 ### Learning Tasks (P1)
 
-| Task ID                                               | Title                                     | Priority | Duration | Dependencies | Status     |
-| ----------------------------------------------------- | ----------------------------------------- | -------- | -------- | ------------ | ---------- |
-| [ACCESS-001](access/ACCESS-001-test-metallb.md)       | Test MetalLB load balancing (pre-configured) | P1       | 1h       | INFRA-003    | ⏸️ Blocked |
-| [ACCESS-002](access/ACCESS-002-test-ingress.md)       | Test ingress and cert-manager (pre-configured) | P1       | 1h       | ACCESS-001   | ⏸️ Blocked |
-| [ACCESS-003](access/ACCESS-003-access-dashboard.md)   | Access Kubernetes dashboard               | P1       | 30m      | ACCESS-002   | ⏸️ Blocked |
+| Task ID                                             | Title                                          | Priority | Duration | Dependencies | Status     |
+| --------------------------------------------------- | ---------------------------------------------- | -------- | -------- | ------------ | ---------- |
+| [ACCESS-001](access/ACCESS-001-test-metallb.md)     | Test MetalLB load balancing (pre-configured)   | P1       | 1h       | INFRA-003    | ⏸️ Blocked |
+| [ACCESS-002](access/ACCESS-002-test-ingress.md)     | Test ingress and cert-manager (pre-configured) | P1       | 1h       | ACCESS-001   | ⏸️ Blocked |
+| [ACCESS-003](access/ACCESS-003-access-dashboard.md) | Access Kubernetes dashboard                    | P1       | 30m      | ACCESS-002   | ⏸️ Blocked |
 
 **Phase 2 Total**: ~2.5 hours
 
@@ -98,11 +98,11 @@ Aligned with the Infrastructure as Code approach and learning roadmap:
 
 ### Using Pre-Deployed Tools (P2)
 
-| Task ID                                       | Title                                    | Priority | Duration | Dependencies | Status     |
-| --------------------------------------------- | ---------------------------------------- | -------- | -------- | ------------ | ---------- |
-| [OPS-001](ops/OPS-001-access-rancher.md)      | Access and explore Rancher (pre-deployed) | P2       | 1h       | APPS-004     | ⏸️ Blocked |
-| [OPS-002](ops/OPS-002-gitops-with-argocd.md)  | Configure GitOps with ArgoCD (pre-deployed) | P2       | 2h       | OPS-001      | ⏸️ Blocked |
-| [OPS-003](ops/OPS-003-setup-monitoring.md)    | Deploy monitoring stack (Prometheus/Grafana) | P2       | 2h       | OPS-002      | ⏸️ Blocked |
+| Task ID                                      | Title                                        | Priority | Duration | Dependencies | Status     |
+| -------------------------------------------- | -------------------------------------------- | -------- | -------- | ------------ | ---------- |
+| [OPS-001](ops/OPS-001-access-rancher.md)     | Access and explore Rancher (pre-deployed)    | P2       | 1h       | APPS-004     | ⏸️ Blocked |
+| [OPS-002](ops/OPS-002-gitops-with-argocd.md) | Configure GitOps with ArgoCD (pre-deployed)  | P2       | 2h       | OPS-001      | ⏸️ Blocked |
+| [OPS-003](ops/OPS-003-setup-monitoring.md)   | Deploy monitoring stack (Prometheus/Grafana) | P2       | 2h       | OPS-002      | ⏸️ Blocked |
 
 **Phase 4 Total**: ~5 hours
 
@@ -167,20 +167,24 @@ gantt
 The deployment follows this automated sequence:
 
 1. **Phase 0: Prerequisites** (~1.5 hours):
+
    - PREP-001: Create Proxmox VM template from Ubuntu Server
    - PREP-002: Configure terraform.tfvars with your environment
 
 2. **Phase 1: Automated Infrastructure** (~2 hours):
-   - INFRA-001: Deploy 6 VMs via Terraform (2 masters + 3 workers + 1 jumpbox)
+
+   - INFRA-001: Deploy 4 VMs via Terraform (3 MicroK8s nodes + 1 jumpbox)
    - INFRA-002: Configure complete stack via Ansible (MicroK8s, Rancher, ArgoCD)
    - INFRA-003: Verify all components are deployed
 
 3. **Phase 2: External Access Testing** (~2.5 hours):
+
    - ACCESS-001: Test MetalLB load balancing (already configured)
    - ACCESS-002: Test ingress and cert-manager (already configured)
    - ACCESS-003: Access Kubernetes dashboard
 
 4. **Phase 3: Application Deployment** (~6 hours):
+
    - APPS-001: Deploy sample application
    - APPS-002: Configure ingress for external access
    - APPS-003: Set up persistent storage
@@ -195,13 +199,13 @@ The deployment follows this automated sequence:
 
 ## Risk Register
 
-| Risk                                 | Probability | Impact | Mitigation                                        |
-| ------------------------------------ | ----------- | ------ | ------------------------------------------------- |
-| Missing Proxmox VM template          | ~~High~~    | ~~High~~ | ~~Must create template first (PREP-001)~~ ✅ Complete |
-| Terraform configuration errors       | Medium      | High   | Use terraform plan before apply                   |
-| Ansible connectivity issues          | Medium      | High   | Test SSH access via jumpbox first                 |
-| Resource constraints                 | Low         | Medium | Verify Proxmox has sufficient resources           |
-| Network configuration problems       | Medium      | High   | Ensure vmbr0 and vmbr1 bridges configured         |
+| Risk                           | Probability | Impact   | Mitigation                                            |
+| ------------------------------ | ----------- | -------- | ----------------------------------------------------- |
+| Missing Proxmox VM template    | ~~High~~    | ~~High~~ | ~~Must create template first (PREP-001)~~ ✅ Complete |
+| Terraform configuration errors | Medium      | High     | Use terraform plan before apply                       |
+| Ansible connectivity issues    | Medium      | High     | Test SSH access via jumpbox first                     |
+| Resource constraints           | Low         | Medium   | Verify Proxmox has sufficient resources               |
+| Network configuration problems | Medium      | High     | Ensure vmbr0 and vmbr1 bridges configured             |
 
 ## Success Criteria
 
@@ -228,8 +232,8 @@ cd ../ansible
 ansible-playbook -i inventory/production.yml playbooks/playbook.yml
 
 # Access cluster via jumpbox
-ssh ansible@192.168.1.240
-ssh master-1
+ssh ansible@192.168.30.240
+ssh microk8s-1
 microk8s kubectl get nodes
 ```
 

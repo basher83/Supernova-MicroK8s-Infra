@@ -11,7 +11,7 @@ Updated: 2025-09-25
 
 ## Objective
 
-Create a standardized Ubuntu Server 22.04 LTS VM template in Proxmox that will serve as the base for deploying 6 VMs (2 master nodes, 3 worker nodes, and 1 jumpbox) for the MicroK8s cluster. This template must include cloud-init support and qemu-guest-agent for Terraform automation.
+Create a standardized Ubuntu Server 22.04 LTS VM template in Proxmox that will serve as the base for deploying 4 VMs (3 MicroK8s nodes + 1 jumpbox) for the MicroK8s cluster. This template must include cloud-init support and qemu-guest-agent for Terraform automation.
 
 ## Prerequisites
 

@@ -6,6 +6,7 @@
 
 - **[learning-roadmap.md](learning-roadmap.md)** - 4-phase MVP learning progression for homelab cluster
 - **[setup-guide.md](setup-guide.md)** - MicroK8s installation and core addon configuration
+- **[developer-tools.md](developer-tools.md)** - Development tools and automation setup
 - **[inspiration.md](inspiration.md)** - Alternative approaches and project comparisons
 
 ### 🛠️ Standards & Best Practices
@@ -26,6 +27,7 @@
 | -------------------- | ---------------------- | ----------- |
 | learning-roadmap.md  | Learning progression   | ✅ Active   |
 | setup-guide.md       | Technical setup        | ✅ Active   |
+| developer-tools.md   | Dev tools setup        | ✅ Active   |
 | inspiration.md       | Alternative approaches | ✅ Active   |
 | ansible-standards.md | Best practices         | ✅ Active   |
 | planning.md          | Enterprise planning    | 📁 Archived |

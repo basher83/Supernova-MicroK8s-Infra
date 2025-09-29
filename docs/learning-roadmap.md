@@ -8,16 +8,16 @@ This roadmap guides you through building and learning with your MicroK8s homelab
 
 ### Tasks
 
-- [ ] Deploy 5 Ubuntu VMs on Proxmox (2 control plane + 3 workers)
+- [ ] Deploy 3 Ubuntu VMs on Proxmox (3 MicroK8s nodes)
 - [ ] Install MicroK8s on all nodes
-- [ ] Form HA cluster (2 master nodes + 3 worker nodes)
+- [ ] Form cluster (all nodes participate equally)
 - [ ] Enable core addons: `dns`, `storage`, `ingress`
 - [ ] Verify cluster health with `microk8s status`
 
 ### Learning Objectives
 
 - Understand MicroK8s installation process
-- Learn HA cluster formation
+- Learn cluster formation with multiple nodes
 - Basic addon concepts (DNS, storage, ingress)
 
 ### Success Criteria
