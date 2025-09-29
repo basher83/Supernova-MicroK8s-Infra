@@ -1,12 +1,12 @@
 module "jumpbox_vm" {
   source = "../proxmox-vm"
 
-  vm_id          = var.vm_id
-  vm_name        = var.vm_name
-  target_node    = var.target_node
-  template_id    = var.template_id
-  start_on_boot  = true
-  qemu_agent     = true
+  vm_id         = var.vm_id
+  vm_name       = var.vm_name
+  target_node   = var.target_node
+  template_id   = var.template_id
+  start_on_boot = true
+  qemu_agent    = true
 
   cpu_cores = var.cpu_cores
   memory    = var.memory
@@ -14,10 +14,10 @@ module "jumpbox_vm" {
   # Dual-homed network configuration
   network_interfaces = [
     {
-      bridge = var.home_network.bridge  # Home network access
+      bridge = var.home_network.bridge # Home network access
     },
     {
-      bridge = var.cluster_network.bridge  # Cluster network access
+      bridge = var.cluster_network.bridge # Cluster network access
     }
   ]
 

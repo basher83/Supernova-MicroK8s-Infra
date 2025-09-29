@@ -17,22 +17,22 @@ variable "template_id" {
 variable "master_nodes" {
   description = "Configuration for master nodes"
   type = list(object({
-    vm_id       = number
-    name        = string
-    ip_address  = string
-    cpu_cores   = number
-    memory      = number
+    vm_id      = number
+    name       = string
+    ip_address = string
+    cpu_cores  = number
+    memory     = number
   }))
 }
 
 variable "worker_nodes" {
   description = "Configuration for worker nodes"
   type = list(object({
-    vm_id       = number
-    name        = string
-    ip_address  = string
-    cpu_cores   = number
-    memory      = number
+    vm_id      = number
+    name       = string
+    ip_address = string
+    cpu_cores  = number
+    memory     = number
   }))
 }
 

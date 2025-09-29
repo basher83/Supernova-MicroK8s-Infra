@@ -2,8 +2,8 @@ output "master_nodes" {
   description = "Master node details"
   value = {
     for name, node in module.master_nodes : name => {
-      vm_id       = node.vm_id
-      vm_name     = node.vm_name
+      vm_id        = node.vm_id
+      vm_name      = node.vm_name
       ip_addresses = node.ip_addresses
     }
   }
@@ -13,8 +13,8 @@ output "worker_nodes" {
   description = "Worker node details"
   value = {
     for name, node in module.worker_nodes : name => {
-      vm_id       = node.vm_id
-      vm_name     = node.vm_name
+      vm_id        = node.vm_id
+      vm_name      = node.vm_name
       ip_addresses = node.ip_addresses
     }
   }
