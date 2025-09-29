@@ -24,6 +24,11 @@ resource "proxmox_virtual_environment_vm" "vm" {
 
   boot_order = var.boot_order
 
+  # Serial device required for Debian 12 / Ubuntu VMs to prevent kernel panic during boot disk resize
+  serial_device {
+    device = "socket"
+  }
+
   dynamic "network_device" {
     for_each = var.network_interfaces
     content {
