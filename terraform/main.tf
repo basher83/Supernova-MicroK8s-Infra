@@ -4,7 +4,7 @@ module "jumpbox" {
 
   vm_id       = local.jumpbox_config.vm_id
   vm_name     = local.jumpbox_config.name
-  target_node = var.target_node
+  target_node = local.jumpbox_config.target_node
   template_id = var.template_id
 
   cpu_cores = local.jumpbox_config.cpu_cores
@@ -26,7 +26,7 @@ module "microk8s_nodes" {
 
   vm_id       = each.value.vm_id
   vm_name     = each.value.name
-  target_node = var.target_node
+  target_node = each.value.target_node
   template_id = var.template_id
 
   cpu_cores = each.value.cpu_cores

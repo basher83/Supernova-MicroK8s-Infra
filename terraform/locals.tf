@@ -7,6 +7,7 @@ locals {
       vm_id      = 311
       name       = "microk8s-1"
       ip_address = "192.168.4.11"
+      target_node = var.target_node_1
       cpu_cores  = var.node_specs.cpu_cores
       memory     = var.node_specs.memory
     },
@@ -14,6 +15,7 @@ locals {
       vm_id      = 312
       name       = "microk8s-2"
       ip_address = "192.168.4.12"
+      target_node = var.target_node_2
       cpu_cores  = var.node_specs.cpu_cores
       memory     = var.node_specs.memory
     },
@@ -21,6 +23,7 @@ locals {
       vm_id      = 313
       name       = "microk8s-3"
       ip_address = "192.168.4.13"
+      target_node = var.target_node_3
       cpu_cores  = var.node_specs.cpu_cores
       memory     = var.node_specs.memory
     }
@@ -28,10 +31,11 @@ locals {
 
   # Jumpbox configuration
   jumpbox_config = {
-    vm_id     = 399
-    name      = "jumpbox-ansible-k8s"
-    cpu_cores = 1
-    memory    = 512
+    vm_id       = 399
+    name        = "jumpbox-ansible-k8s"
+    target_node = var.target_node_1  # Deploy jumpbox on first node
+    cpu_cores   = 1
+    memory      = 512
   }
 
   # Common tags for all resources

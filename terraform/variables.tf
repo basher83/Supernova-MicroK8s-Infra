@@ -30,9 +30,22 @@ variable "proxmox_ssh_username" {
   default     = "root"
 }
 
-variable "target_node" {
-  description = "Proxmox node to deploy VMs on"
+variable "target_node_1" {
+  description = "First Proxmox node for VM deployment"
   type        = string
+  default     = "pve01"
+}
+
+variable "target_node_2" {
+  description = "Second Proxmox node for VM deployment"
+  type        = string
+  default     = "pve02"
+}
+
+variable "target_node_3" {
+  description = "Third Proxmox node for VM deployment"
+  type        = string
+  default     = "pve03"
 }
 
 variable "template_id" {

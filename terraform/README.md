@@ -9,6 +9,15 @@ The infrastructure consists of:
 - **3 MicroK8s Nodes**: All nodes run MicroK8s and participate equally in the cluster
 - **1 Jumpbox**: Bastion host with dual-network access for secure cluster management
 
+## Multi-Node Deployment
+
+By default, each MicroK8s node is deployed on a separate Proxmox node for high availability:
+
+- **microk8s-1** → `target_node_1` (default: pve01)
+- **microk8s-2** → `target_node_2` (default: pve02)
+- **microk8s-3** → `target_node_3` (default: pve03)
+- **jumpbox** → `target_node_1` (same as first MicroK8s node)
+
 ## Directory Structure
 
 ```text
