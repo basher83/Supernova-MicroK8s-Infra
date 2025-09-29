@@ -51,26 +51,19 @@ all:
     jumpbox_vm:
       hosts:
         jumpbox:
-          ansible_host: "192.168.1.240"
-    k8s_nodes:
+          ansible_host: "192.168.30.240"
+    microk8s_nodes:
       children:
-        masters:
+        microk8s:
           hosts:
-            master-1:
-              ansible_host: "192.168.3.11"
-            master-2:
-              ansible_host: "192.168.3.12"
-        workers:
-          hosts:
-            worker-1:
-              ansible_host: "192.168.3.21"
-            worker-2:
-              ansible_host: "192.168.3.22"
-            worker-3:
-              ansible_host: "192.168.3.23"
-      vars:
-        # SSH proxy configuration for cluster nodes
-        ansible_ssh_common_args: "-o ProxyJump=ansible@192.168.1.240 -o UserKnownHostsFile=/dev/null -o ForwardAgent=yes"
+            microk8s-1:
+              ansible_host: "192.168.4.11"
+            microk8s-2:
+              ansible_host: "192.168.4.12"
+            microk8s-3:
+              ansible_host: "192.168.4.13"
+          vars:
+            ansible_ssh_common_args: "-o ProxyJump=ansible@192.168.30.240 -o UserKnownHostsFile=/dev/null -o ForwardAgent=yes"
 EOF
 
 echo "✅ Generated Ansible inventory: $INVENTORY_DIR/$ENVIRONMENT.yml"
@@ -82,7 +75,7 @@ if python3 -c "import yaml; yaml.safe_load(open('inventory/$ENVIRONMENT.yml'))" 
     echo "✅ Inventory syntax is valid"
     echo ""
     echo "📋 Inventory summary:"
-    echo "Generated inventory for Supernova-MicroK8s cluster with jumpbox and k8s nodes"
+    echo "Generated inventory for Supernova-MicroK8s cluster with jumpbox and 3 MicroK8s nodes"
 else
     echo "❌ Inventory syntax error - please check the generated file"
 fi

@@ -2,25 +2,19 @@
 # These variables define network configuration and hostnames used throughout the playbooks
 # Network Configuration
 home_network_gateway: "192.168.1.1"
-cluster_network_gateway: "192.168.3.1"
+cluster_network_gateway: "192.168.4.1"
 # Host Configuration
 jumpbox_hostname: "jumpbox"
-jumpbox_ip_home: "192.168.1.240"
-jumpbox_ip_cluster: "192.168.3.250"
+jumpbox_ip_home: "192.168.30.240"
+jumpbox_ip_cluster: "192.168.4.240"
 # Cluster Node Configuration
 cluster_nodes:
-  masters:
-    - name: "master-1"
-      ip: "192.168.3.11"
-    - name: "master-2"
-      ip: "192.168.3.12"
-  workers:
-    - name: "worker-1"
-      ip: "192.168.3.21"
-    - name: "worker-2"
-      ip: "192.168.3.22"
-    - name: "worker-3"
-      ip: "192.168.3.23"
+  - name: "microk8s-1"
+    ip: "192.168.4.11"
+  - name: "microk8s-2"
+    ip: "192.168.4.12"
+  - name: "microk8s-3"
+    ip: "192.168.4.13"
 # Service Configuration
 rancher_hostname: "rancher.ansible"
 argocd_hostname: "argocd.ansible"
