@@ -93,9 +93,19 @@ terraform plan
 
 ### 4. Apply Configuration
 
+⚠️ **Important**: Proxmox can experience lock errors when creating multiple VMs simultaneously due to I/O bottlenecks.
+
+**Recommended approach**:
 ```bash
-terraform apply
+# Option 1: Sequential deployment (recommended)
+terraform apply -parallelism=1
+
+# Option 2: Deploy jumpbox first, then nodes
+terraform apply -target=module.jumpbox
+terraform apply -target=module.microk8s_nodes
 ```
+
+**Alternative**: If you encounter lock errors, destroy and retry with sequential deployment.
 
 ### 5. Generate Ansible Inventory
 
@@ -124,12 +134,50 @@ The configuration provides:
 - SSH proxy configuration for accessing nodes
 - Next steps for cluster configuration
 
+## Troubleshooting
+
+### Proxmox Lock Errors During Multi-VM Deployment
+
+**Issue**: Creating multiple VMs simultaneously can cause Proxmox VE lock errors due to I/O bottlenecks.
+
+**Root Cause**: Proxmox VE has limited I/O capacity when handling concurrent VM creation operations, especially with cloud image resizing.
+
+**Solutions**:
+
+1. **Sequential Deployment (Recommended)**:
+   ```bash
+   terraform apply -parallelism=1
+   ```
+
+2. **Targeted Deployment**:
+   ```bash
+   # Deploy jumpbox first
+   terraform apply -target=module.jumpbox
+
+   # Then deploy MicroK8s nodes
+   terraform apply -target=module.microk8s_nodes
+   ```
+
+3. **Retry on Failure**:
+   ```bash
+   # If lock errors occur, destroy and retry with sequential deployment
+   terraform destroy
+   terraform apply -parallelism=1
+   ```
+
+**Related Issues**:
+- [Proxmox Provider Issue #1929](https://github.com/Telmate/terraform-provider-proxmox/issues/1929)
+- [Proxmox Provider Issue #995](https://github.com/Telmate/terraform-provider-proxmox/issues/995)
+
+**Feature Request**: Consider supporting [OpenTofu provider parallelization configuration](https://github.com/opentofu/opentofu/issues/2466) with 👍 to help with prioritization.
+
 ## Best Practices
 
 1. **State Management**: Consider using remote state backend for production
-2. **Variable Sensitivity**: Keep `proxmox_password` in environment variables
+2. **Variable Sensitivity**: Keep `pve_api_token` in environment variables
 3. **Resource Sizing**: Adjust VM specifications based on available resources
 4. **Network Security**: Ensure proper firewall rules between networks
+5. **Deployment Strategy**: Use `-parallelism=1` for reliable multi-VM deployment
 
 ## Troubleshooting
 
@@ -146,11 +194,13 @@ The configuration provides:
 terraform plan -out=tfplan
 
 # Targeted resource updates
-terraform apply -target=module.k8s_cluster
+terraform apply -target=module.jumpbox
+terraform apply -target=module.microk8s_nodes
 
 # State inspection
 terraform state list
 terraform state show module.jumpbox
+terraform state show module.microk8s_nodes
 ```
 
 ## Dependencies

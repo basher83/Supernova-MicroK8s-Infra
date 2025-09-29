@@ -20,6 +20,8 @@ module "jumpbox" {
 
 # MicroK8s Cluster Nodes
 # Create 3 identical MicroK8s nodes that will form the cluster
+# IMPORTANT: Proxmox can have lock errors when creating multiple VMs simultaneously
+# Consider running with: terraform apply -parallelism=1
 module "microk8s_nodes" {
   source   = "./modules/proxmox-vm"
   for_each = { for node in local.microk8s_nodes : node.name => node }
