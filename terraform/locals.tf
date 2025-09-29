@@ -70,14 +70,13 @@ locals {
     }
   }
 
-  # Node assignments - distribute VMs across Proxmox nodes
-  # NOTE: Template VM 7024 currently only exists on 'lloyd'
-  # For multi-node deployment, copy template to target nodes first
+  # Node assignments - distribute VMs across Proxmox nodes for high availability
+  # Template VM 7024 exists on 'lloyd' - Terraform will clone from lloyd to target nodes
   node_assignments = {
-    jumpbox    = { node = "lloyd", template_id = var.template_id }
-    microk8s-1 = { node = "lloyd", template_id = var.template_id }
-    microk8s-2 = { node = "lloyd", template_id = var.template_id }
-    microk8s-3 = { node = "lloyd", template_id = var.template_id }
+    jumpbox    = { node = "holly", template_id = var.template_id, source_node = "lloyd" }
+    microk8s-1 = { node = "lloyd", template_id = var.template_id, source_node = "lloyd" }
+    microk8s-2 = { node = "mable", template_id = var.template_id, source_node = "lloyd" }
+    microk8s-3 = { node = "holly", template_id = var.template_id, source_node = "lloyd" }
   }
 
   # Common tags for all resources
