@@ -15,7 +15,7 @@ environment = "homelab"
 
 # Network Configuration (adjust if your network differs)
 home_network = {
-  gateway = "192.168.1.1"   # Your home router IP
+  gateway = "192.168.30.1"   # Your home router IP
   bridge  = "vmbr0"          # Home network bridge in Proxmox
 }
 
@@ -34,6 +34,3 @@ node_specs = {
   cpu_cores = 2
   memory    = 4096  # 4GB RAM
 }
-
-# SSH Configuration (optional - for cloud-init)
-ssh_public_key = ""  # Your SSH public key (if using cloud-init)

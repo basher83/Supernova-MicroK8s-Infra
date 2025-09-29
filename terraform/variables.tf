@@ -61,7 +61,7 @@ variable "home_network" {
     bridge  = string
   })
   default = {
-    gateway = "192.168.1.1"
+    gateway = "192.168.30.1"
     bridge  = "vmbr0"
   }
 }
@@ -104,11 +104,4 @@ variable "node_specs" {
     cpu_cores = 2
     memory    = 4096
   }
-}
-
-# SSH Configuration
-variable "ssh_public_key" {
-  description = "SSH public key for VM access"
-  type        = string
-  default     = ""
 }
