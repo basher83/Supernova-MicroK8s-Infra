@@ -1,8 +1,7 @@
 provider "proxmox" {
-  endpoint = var.proxmox_endpoint
-  username = var.proxmox_username
-  password = var.proxmox_password
-  insecure = true
+  endpoint  = var.pve_api_url
+  api_token = var.pve_api_token
+  insecure  = var.proxmox_insecure
 
   ssh {
     agent = true

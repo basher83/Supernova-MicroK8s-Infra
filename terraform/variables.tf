@@ -6,22 +6,22 @@ variable "environment" {
 }
 
 # Proxmox Configuration
-variable "proxmox_endpoint" {
-  description = "Proxmox API endpoint"
+variable "pve_api_url" {
+  description = "Proxmox API endpoint URL"
   type        = string
   default     = "https://192.168.1.100:8006/"
 }
 
-variable "proxmox_username" {
-  description = "Proxmox username"
-  type        = string
-  default     = "root@pam"
-}
-
-variable "proxmox_password" {
-  description = "Proxmox password"
+variable "pve_api_token" {
+  description = "Proxmox API token for authentication"
   type        = string
   sensitive   = true
+}
+
+variable "proxmox_insecure" {
+  description = "Allow insecure TLS connections to Proxmox"
+  type        = bool
+  default     = true
 }
 
 variable "target_node" {

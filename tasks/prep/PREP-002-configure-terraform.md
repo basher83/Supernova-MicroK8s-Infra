@@ -43,8 +43,8 @@ cp terraform.tfvars.example terraform.tfvars
 
 Edit terraform.tfvars and set:
 
-- `pm_password`: Your Proxmox root password
-- `proxmox_endpoint`: Update IP if different from "https://192.168.1.100:8006/"
+- `pve_api_token`: Your Proxmox API token (create in Proxmox UI: Datastore > API Tokens)
+- `pve_api_url`: Update IP if different from "https://192.168.1.100:8006/"
 - `target_node`: Your Proxmox node name (check in Proxmox UI)
 
 ### 3. Set Template Configuration
@@ -115,8 +115,9 @@ terraform plan
 
 2. **"Authentication failed"**
 
-   - Verify pm_password is correct
-   - Check proxmox_endpoint URL and port
+   - Verify pve_api_token is valid and not expired
+   - Check pve_api_url and ensure API token has proper permissions
+   - Verify API token format: "USER@REALM!TOKENID=TOKENVALUE"
 
 3. **"Bridge not found"**
 

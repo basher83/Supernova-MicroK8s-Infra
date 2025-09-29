@@ -1,7 +1,7 @@
 # Proxmox Configuration
-proxmox_endpoint = "https://192.168.1.100:8006/"  # Update to your Proxmox IP
-proxmox_username = "root@pam"
-proxmox_password = "your-proxmox-password"        # REQUIRED: Your Proxmox password
+pve_api_url     = "https://192.168.1.100:8006/"  # Update to your Proxmox IP
+pve_api_token   = "your-proxmox-api-token"       # REQUIRED: Your Proxmox API token
+proxmox_insecure = true                          # Set to false for production
 
 # Proxmox Node & Template
 target_node = "your-node-name"                    # REQUIRED: Your Proxmox node name
