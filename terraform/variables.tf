@@ -55,7 +55,7 @@ variable "cluster_network" {
     cidr_suffix = string
   })
   default = {
-    gateway     = "192.168.3.1"
+    gateway     = "192.168.4.1"
     bridge      = "vmbr1"
     cidr_suffix = "/24"
   }
@@ -65,30 +65,18 @@ variable "cluster_network" {
 variable "jumpbox_home_ip" {
   description = "Jumpbox IP on home network (with CIDR)"
   type        = string
-  default     = "192.168.1.240/24"
+  default     = "192.168.30.240/24"
 }
 
 variable "jumpbox_cluster_ip" {
   description = "Jumpbox IP on cluster network (without CIDR)"
   type        = string
-  default     = "192.168.3.250"
+  default     = "192.168.4.240"
 }
 
 # VM Specifications
-variable "master_specs" {
-  description = "Specifications for master nodes"
-  type = object({
-    cpu_cores = number
-    memory    = number
-  })
-  default = {
-    cpu_cores = 2
-    memory    = 4096
-  }
-}
-
-variable "worker_specs" {
-  description = "Specifications for worker nodes"
+variable "node_specs" {
+  description = "Specifications for MicroK8s nodes"
   type = object({
     cpu_cores = number
     memory    = number

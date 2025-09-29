@@ -5,13 +5,13 @@ This directory contains the Terraform configuration for deploying a MicroK8s Kub
 ## Architecture
 
 The infrastructure consists of:
-- **2 Master Nodes**: High-availability control plane
-- **3 Worker Nodes**: Application workloads
-- **1 Jumpbox**: Bastion host with dual-network access
+
+- **3 MicroK8s Nodes**: All nodes run MicroK8s and participate equally in the cluster
+- **1 Jumpbox**: Bastion host with dual-network access for secure cluster management
 
 ## Directory Structure
 
-```
+```text
 terraform/
 ├── main.tf                   # Root module orchestration
 ├── variables.tf              # Input variable definitions
@@ -23,26 +23,32 @@ terraform/
 │
 └── modules/
     ├── proxmox-vm/          # Generic VM module
-    ├── k8s-cluster/         # Kubernetes cluster module
+    ├── k8s-cluster/         # Kubernetes cluster orchestration module
     └── jumpbox/             # Jumpbox/bastion module
 ```
 
 ## Module Design
 
 ### proxmox-vm
+
 Generic, reusable module for creating Proxmox VMs with:
+
 - Dynamic network interface configuration
 - Cloud-init support
 - Flexible resource allocation
 
 ### k8s-cluster
+
 Orchestrates creation of master and worker nodes:
+
 - Uses `for_each` for node management
 - Configures cluster networking
 - Applies consistent tagging
 
 ### jumpbox
+
 Dual-homed bastion host for secure access:
+
 - Connected to both home and cluster networks
 - Minimal resource footprint
 - SSH proxy configuration
@@ -52,11 +58,13 @@ Dual-homed bastion host for secure access:
 ### 1. Configure Variables
 
 Copy and customize the example configuration:
+
 ```bash
 cp terraform.tfvars.example terraform.tfvars
 ```
 
 Edit `terraform.tfvars` with your settings:
+
 - Proxmox credentials and endpoint
 - Template ID (from PREP-001)
 - Network configuration
@@ -88,18 +96,19 @@ terraform output -raw ansible_inventory > ../ansible/inventory/terraform.yml
 
 ## Network Configuration
 
-**Dual Network Setup:**
-- **Home Network** (192.168.1.0/24): External access via vmbr0
-- **Cluster Network** (192.168.3.0/24): Internal communication via vmbr1
+**Cluster Network Setup:**
+
+- **Cluster Network** (192.168.4.0/24): Internal communication via vmbr1
 
 **IP Allocations:**
-- Masters: 192.168.3.11-12
-- Workers: 192.168.3.21-23
-- Jumpbox: 192.168.1.240 (home), 192.168.3.250 (cluster)
+
+- MicroK8s Nodes: 192.168.4.11-13
+- Jumpbox: 192.168.30.240 (home), 192.168.4.240 (cluster)
 
 ## Outputs
 
 The configuration provides:
+
 - Cluster summary and node details
 - Network configuration
 - Ansible inventory in YAML format
@@ -116,11 +125,13 @@ The configuration provides:
 ## Troubleshooting
 
 **Common Issues:**
+
 - Template not found: Verify template ID matches PREP-001 creation
 - Network bridges missing: Confirm vmbr0/vmbr1 exist in Proxmox
 - Resource constraints: Reduce memory/CPU if needed
 
 **Debug Commands:**
+
 ```bash
 # Detailed planning
 terraform plan -out=tfplan

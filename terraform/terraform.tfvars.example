@@ -17,22 +17,17 @@ home_network = {
 }
 
 cluster_network = {
-  gateway     = "192.168.3.1"   # Cluster gateway (usually Proxmox IP on cluster network)
+  gateway     = "192.168.4.1"   # Cluster gateway (usually Proxmox IP on cluster network)
   bridge      = "vmbr1"          # Cluster network bridge in Proxmox
   cidr_suffix = "/24"
 }
 
 # Jumpbox IPs
-jumpbox_home_ip    = "192.168.1.240/24"  # Jumpbox IP on home network
-jumpbox_cluster_ip = "192.168.3.250"     # Jumpbox IP on cluster network
+jumpbox_home_ip    = "192.168.30.240/24"  # Jumpbox IP on home network
+jumpbox_cluster_ip = "192.168.4.240"     # Jumpbox IP on cluster network
 
 # VM Specifications (adjust based on available resources)
-master_specs = {
-  cpu_cores = 2
-  memory    = 4096  # 4GB RAM
-}
-
-worker_specs = {
+node_specs = {
   cpu_cores = 2
   memory    = 4096  # 4GB RAM
 }

@@ -3,20 +3,14 @@ output "cluster_summary" {
   value = {
     cluster_name = local.cluster_name
     environment  = var.environment
-    node_count   = module.k8s_cluster.cluster_info.total_nodes
-    master_count = module.k8s_cluster.cluster_info.master_count
-    worker_count = module.k8s_cluster.cluster_info.worker_count
+    node_count   = length(local.microk8s_nodes)
+    node_names   = [for node in local.microk8s_nodes : node.name]
   }
 }
 
-output "master_nodes" {
-  description = "Master node details"
-  value       = module.k8s_cluster.master_nodes
-}
-
-output "worker_nodes" {
-  description = "Worker node details"
-  value       = module.k8s_cluster.worker_nodes
+output "microk8s_nodes" {
+  description = "MicroK8s node details"
+  value       = { for k, v in module.microk8s_nodes : k => v }
 }
 
 output "jumpbox_info" {
@@ -34,8 +28,7 @@ output "network_info" {
   value = {
     home_network    = var.home_network
     cluster_network = var.cluster_network
-    master_ips      = module.k8s_cluster.master_ips
-    worker_ips      = module.k8s_cluster.worker_ips
+    node_ips        = [for node in local.microk8s_nodes : node.ip_address]
   }
 }
 
@@ -48,13 +41,13 @@ output "ansible_proxy_config" {
   description = "Ansible SSH proxy configuration via jumpbox"
   value = {
     proxy_command = "ssh -o StrictHostKeyChecking=no -W %h:%p ansible@${module.jumpbox.home_network_ip}"
-    ssh_config = <<-EOT
+    ssh_config    = <<-EOT
       Host jumpbox
         HostName ${module.jumpbox.home_network_ip}
         User ansible
         StrictHostKeyChecking no
 
-      Host master-* worker-*
+      Host microk8s-*
         ProxyJump jumpbox
         User ansible
         StrictHostKeyChecking no
@@ -64,7 +57,7 @@ output "ansible_proxy_config" {
 
 output "next_steps" {
   description = "Next steps after infrastructure deployment"
-  value = <<-EOT
+  value       = <<-EOT
     Infrastructure deployed successfully!
 
     1. SSH to jumpbox:
@@ -77,8 +70,8 @@ output "next_steps" {
        cd ../ansible
        ansible-playbook -i inventory/terraform.yml playbooks/playbook.yml
 
-    4. Access cluster from jumpbox:
-       ssh master-1
+    4. Access cluster via jumpbox:
+       ssh microk8s-1
        microk8s kubectl get nodes
   EOT
 }

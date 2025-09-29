@@ -43,7 +43,7 @@ variable "home_network" {
 variable "home_network_ip" {
   description = "IP address on home network (with CIDR)"
   type        = string
-  default     = "192.168.1.240/24"
+  default     = "192.168.30.240/24"
 }
 
 variable "cluster_network" {
