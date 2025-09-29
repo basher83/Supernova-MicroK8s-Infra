@@ -3,23 +3,34 @@ output "cluster_summary" {
   value = {
     cluster_name = local.cluster_name
     environment  = var.environment
-    node_count   = length(local.microk8s_nodes)
-    node_names   = [for node in local.microk8s_nodes : node.name]
+    vm_count     = length(local.vm_instances)
+    vm_names     = [for name, config in local.vm_instances : name]
   }
+}
+
+output "vm_details" {
+  description = "All VM deployment details"
+  value       = { for k, v in module.vm : k => v }
 }
 
 output "microk8s_nodes" {
   description = "MicroK8s node details"
-  value       = { for k, v in module.microk8s_nodes : k => v }
+  value = {
+    for name, config in local.vm_instances :
+    name => module.vm[name]
+    if config.role == "microk8s-node"
+  }
 }
 
 output "jumpbox_info" {
   description = "Jumpbox connection information"
   value = {
-    vm_name            = module.jumpbox.vm_name
-    ssh_connection     = module.jumpbox.ssh_connection
-    home_network_ip    = module.jumpbox.home_network_ip
-    cluster_network_ip = module.jumpbox.cluster_network_ip
+    vm_name            = module.vm["jumpbox"].vm_name
+    vm_id              = module.vm["jumpbox"].vm_id
+    node               = module.vm["jumpbox"].node
+    home_network_ip    = split("/", local.vm_instances["jumpbox"].ip)[0]
+    cluster_network_ip = local.vm_instances["jumpbox"].cluster_ip != "" ? "${local.vm_instances["jumpbox"].cluster_ip}${var.cluster_network.cidr_suffix}" : null
+    ssh_connection     = "ssh ansible@${split("/", local.vm_instances["jumpbox"].ip)[0]}"
   }
 }
 
@@ -28,7 +39,11 @@ output "network_info" {
   value = {
     home_network    = var.home_network
     cluster_network = var.cluster_network
-    node_ips        = [for node in local.microk8s_nodes : node.ip_address]
+    node_ips        = [
+      for name, config in local.vm_instances :
+      split("/", config.ip)[0]
+      if config.role == "microk8s-node"
+    ]
   }
 }
 
@@ -40,10 +55,10 @@ output "ansible_inventory" {
 output "ansible_proxy_config" {
   description = "Ansible SSH proxy configuration via jumpbox"
   value = {
-    proxy_command = "ssh -o StrictHostKeyChecking=no -W %h:%p ansible@${module.jumpbox.home_network_ip}"
+    proxy_command = "ssh -o StrictHostKeyChecking=no -W %h:%p ansible@${split("/", local.vm_instances["jumpbox"].ip)[0]}"
     ssh_config    = <<-EOT
       Host jumpbox
-        HostName ${module.jumpbox.home_network_ip}
+        HostName ${split("/", local.vm_instances["jumpbox"].ip)[0]}
         User ansible
         StrictHostKeyChecking no
 
@@ -61,7 +76,7 @@ output "next_steps" {
     Infrastructure deployed successfully!
 
     1. SSH to jumpbox:
-       ${module.jumpbox.ssh_connection}
+       ssh ansible@${split("/", local.vm_instances["jumpbox"].ip)[0]}
 
     2. Configure Ansible inventory:
        terraform output -raw ansible_inventory > ../ansible/inventory/terraform.yml
