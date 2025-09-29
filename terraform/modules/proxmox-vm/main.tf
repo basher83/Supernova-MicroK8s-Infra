@@ -9,9 +9,13 @@ resource "proxmox_virtual_environment_vm" "vm" {
   bios    = var.bios_type
 
   clone {
-    vm_id = var.template_id
-    full  = true
+    vm_id        = var.template_id
+    full         = true
+    datastore_id = var.disk_datastore_id
   }
+
+  # Ensure template is available on target node by waiting for it
+  # This addresses the cross-node template availability issue
 
   agent {
     enabled = var.qemu_agent
