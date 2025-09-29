@@ -11,12 +11,20 @@ The infrastructure consists of:
 
 ## Multi-Node Deployment
 
-By default, each MicroK8s node is deployed on a separate Proxmox node for high availability:
+⚠️ **Important**: VM templates in Proxmox VE are node-specific. The template VM must exist on each target node.
 
-- **microk8s-1** → `target_node_1` (default: pve01)
-- **microk8s-2** → `target_node_2` (default: pve02)
-- **microk8s-3** → `target_node_3` (default: pve03)
-- **jumpbox** → `target_node_1` (same as first MicroK8s node)
+**Current Limitation**: This configuration deploys all VMs on the same Proxmox node (`lloyd`) because the template VM 7024 only exists there.
+
+**For True Multi-Node Deployment**:
+1. Copy the template VM to each target node, or
+2. Use shared storage (Ceph) for templates, or
+3. Deploy on a single node initially
+
+**Current Deployment Mapping**:
+- **microk8s-1** → `lloyd` (has template)
+- **microk8s-2** → `lloyd` (has template)
+- **microk8s-3** → `lloyd` (has template)
+- **jumpbox** → `lloyd` (has template)
 
 ## Directory Structure
 
@@ -136,6 +144,58 @@ The configuration provides:
 - Next steps for cluster configuration
 
 ## Troubleshooting
+
+### VM Template Availability Issues
+
+**Issue**: `unable to find configuration file for VM 7024 on node 'target_node'`
+
+**Root Cause**: VM templates in Proxmox VE are node-specific. The template VM exists on one node but deployment targets a different node.
+
+**Solutions**:
+
+1. **Deploy on Template Node**:
+   ```bash
+   # Configure terraform.tfvars to use only the node with the template
+   target_node_1 = "lloyd"  # Node with template
+   target_node_2 = "lloyd"  # Same node
+   target_node_3 = "lloyd"  # Same node
+   ```
+
+2. **Copy Template to Target Nodes**:
+   ```bash
+   # In Proxmox UI: Clone VM 7024 to each target node with new VM ID
+   # Or use Proxmox API/CLI to copy the template
+   qm clone 7024 8000 --name ubuntu-template-holly --full
+   qm clone 7024 8001 --name ubuntu-template-mable --full
+   ```
+
+3. **Use Shared Storage**:
+   - Configure Ceph or other shared storage for VM disks
+   - Templates become available across all cluster nodes
+
+### EFI Disk Configuration Issues
+
+**Issue**: `Parameter verification failed. (efidisk0: invalid format - missing key in comma-separated list property)`
+
+**Root Cause**: EFI disk configuration issues when using UEFI boot with some Proxmox versions or configurations.
+
+**Solutions**:
+
+1. **Disable EFI Disk**:
+   ```bash
+   # In terraform.tfvars, set:
+   efi_disk_enabled = false
+   ```
+
+2. **Use BIOS Boot**:
+   ```bash
+   # In terraform.tfvars, set:
+   bios_type = "seabios"  # Instead of "ovmf"
+   ```
+
+3. **Check Proxmox Version**:
+   - Ensure Proxmox VE is updated to latest version
+   - Some older versions have EFI disk configuration issues
 
 ### Proxmox Lock Errors During Multi-VM Deployment
 
