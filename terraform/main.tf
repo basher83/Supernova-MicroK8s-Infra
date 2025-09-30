@@ -6,10 +6,11 @@ module "vm" {
   source = "./modules/proxmox-vm"
 
   # Assign Proxmox node deterministically based on node_assignments
-  vm_id       = each.value.vm_id
-  vm_name     = each.value.name
-  target_node = local.node_assignments[each.key].node
-  template_id = local.node_assignments[each.key].template_id
+  vm_id         = each.value.vm_id
+  vm_name       = each.value.name
+  target_node   = local.node_assignments[each.key].node
+  template_id   = local.node_assignments[each.key].template_id
+  template_node = local.node_assignments[each.key].source_node
 
   # VM specifications
   cpu_cores         = each.value.cpu_cores
@@ -57,8 +58,10 @@ module "vm" {
     }
   ]
 
-  tags = merge(local.common_tags, {
-    role = each.value.role
-    node = local.node_assignments[each.key].node
-  })
+  tags = [
+    var.environment,
+    each.value.role,
+    local.node_assignments[each.key].node,
+    "microk8s-cluster"
+  ]
 }
