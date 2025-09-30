@@ -1,15 +1,39 @@
+# Create vendor data snippet to install qemu-guest-agent
+resource "proxmox_virtual_environment_file" "vendor_data" {
+  count = var.cloud_init_enabled ? 1 : 0
+
+  content_type = "snippets"
+  datastore_id = "local"
+  node_name    = var.target_node
+
+  source_raw {
+    file_name = "microk8s-vendor-${var.vm_id}.yaml"
+    data      = <<-EOF
+#cloud-config
+packages:
+  - qemu-guest-agent
+
+runcmd:
+  - systemctl enable qemu-guest-agent
+  - systemctl start qemu-guest-agent
+    EOF
+  }
+}
+
 resource "proxmox_virtual_environment_vm" "vm" {
   vm_id       = var.vm_id
   name        = var.vm_name
   node_name   = var.target_node
   description = var.vm_description
   on_boot     = var.start_on_boot
+  tags        = var.tags
 
   machine = var.machine_type
   bios    = var.bios_type
 
   clone {
     vm_id        = var.template_id
+    node_name    = var.template_node
     full         = true
     datastore_id = var.disk_datastore_id
   }
@@ -19,6 +43,7 @@ resource "proxmox_virtual_environment_vm" "vm" {
 
   agent {
     enabled = var.qemu_agent
+    timeout = "5m"
   }
 
   cpu {
@@ -42,6 +67,7 @@ resource "proxmox_virtual_environment_vm" "vm" {
     for_each = var.efi_disk_enabled ? [1] : []
     content {
       datastore_id = var.disk_datastore_id
+      file_format  = "raw"
       type         = "4m"
     }
   }
@@ -79,7 +105,8 @@ resource "proxmox_virtual_environment_vm" "vm" {
         }
       }
 
-      user_data_file_id = var.user_data_file_id
+      user_data_file_id   = var.user_data_file_id
+      vendor_data_file_id = var.cloud_init_enabled ? proxmox_virtual_environment_file.vendor_data[0].id : null
     }
   }
 
