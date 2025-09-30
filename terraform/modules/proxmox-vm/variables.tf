@@ -18,6 +18,12 @@ variable "template_id" {
   type        = number
 }
 
+variable "template_node" {
+  description = "The Proxmox node where the template exists"
+  type        = string
+  default     = "lloyd"
+}
+
 variable "start_on_boot" {
   description = "Whether to start the VM on boot"
   type        = bool
@@ -135,7 +141,7 @@ variable "user_data_file_id" {
 }
 
 variable "tags" {
-  description = "Tags to apply to the VM"
-  type        = map(string)
-  default     = {}
+  description = "Tags to apply to the VM (list of strings)"
+  type        = list(string)
+  default     = []
 }
