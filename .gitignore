@@ -51,7 +51,7 @@ Thumbs.db
 .mise.local.toml
 
 .mcp.json
-
+.mcp.json.backup
 
 .envrc
 infrastructure/environments/production/terraform.tfvars.local
