@@ -5,16 +5,10 @@ all:
     jumpbox_vm:
       hosts:
         jumpbox:
-          ansible_host: "192.168.30.240"
     microk8s_nodes:
       children:
         microk8s:
           hosts:
             microk8s-1:
-              ansible_host: "192.168.4.11"
             microk8s-2:
-              ansible_host: "192.168.4.12"
             microk8s-3:
-              ansible_host: "192.168.4.13"
-          vars:
-            ansible_ssh_common_args: "-o ProxyJump=ansible@192.168.30.240 -o UserKnownHostsFile=/dev/null -o ForwardAgent=yes"
