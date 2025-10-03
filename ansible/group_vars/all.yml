@@ -19,6 +19,6 @@ cluster_nodes:
 rancher_hostname: "rancher.ansible"
 argocd_hostname: "argocd.ansible"
 # SSH Configuration
-ansible_user: "ansible"
+# ansible_user: "ansible"  # Commented out to use SSH config settings
 ssh_proxy_host: "{{ jumpbox_hostname }}"
 ssh_proxy_ip: "{{ jumpbox_ip_home }}"
