@@ -32,8 +32,8 @@ The **working examples** can be run directly:
 
 ```bash
 # Infisical integration examples (require INFISICAL_* environment variables)
-uv run ansible-playbook playbooks/examples/infisical-demo.yml
-uv run ansible-playbook playbooks/examples/infisical-test.yml
+ansible-playbook playbooks/examples/infisical-demo.yml
+ansible-playbook playbooks/examples/infisical-test.yml
 ```
 
 ### Pattern Demonstrations (📚 Reference)

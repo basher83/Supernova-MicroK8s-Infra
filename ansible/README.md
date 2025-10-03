@@ -29,13 +29,13 @@ ansible/
 
 ```bash
 # Install dependencies
-uv run ansible-galaxy collection install -r requirements.yml
+ansible-galaxy collection install -r requirements.yml
 
 # Run main deployment
-uv run ansible-playbook playbooks/playbook.yml
+ansible-playbook playbooks/playbook.yml
 
 # Run examples
-uv run ansible-playbook playbooks/examples/infisical-demo.yml
+ansible-playbook playbooks/examples/infisical-demo.yml
 ```
 
 ## Key Components
@@ -102,11 +102,11 @@ All infrastructure secrets (Proxmox credentials, service tokens, etc.) are retri
 
 ```bash
 # Syntax check
-uv run ansible-playbook --syntax-check playbooks/playbook.yml
+ansible-playbook --syntax-check playbooks/playbook.yml
 
 # Dry run
-uv run ansible-playbook --check --diff playbooks/playbook.yml
+ansible-playbook --check --diff playbooks/playbook.yml
 
 # Lint roles
-uv run ansible-lint roles/
+ansible-lint roles/
 ```

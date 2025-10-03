@@ -14,7 +14,7 @@
 #
 # Usage:
 #   Standard execution:
-#   uv run ansible-playbook playbooks/infrastructure/vault/smoke-test.yml \
+#   ansible-playbook playbooks/infrastructure/vault/smoke-test.yml \
 #     -i inventory/environments/vault-cluster/production.yaml
 #   Test recovery keys: --extra-vars "test_recovery_keys=true"
 #   Verbose output: --extra-vars "verbose_output=true"

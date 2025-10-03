@@ -3,7 +3,7 @@
 # This playbook demonstrates improved connectivity testing that handles DNS issues gracefully
 #
 # Usage:
-#   uv run ansible-playbook playbooks/assessment/robust-connectivity-test.yml \
+#   ansible-playbook playbooks/assessment/robust-connectivity-test.yml \
 #     -i inventory/doggos-homelab/infisical.proxmox.yml
 
 - name: Robust Connectivity Testing

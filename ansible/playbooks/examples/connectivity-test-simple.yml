@@ -1,7 +1,7 @@
 ---
 # Simple Connectivity Test for Tailscale Remote Development
 # Usage:
-#   uv run ansible-playbook playbooks/assessment/simple-connectivity-test.yml \
+#   ansible-playbook playbooks/assessment/simple-connectivity-test.yml \
 #     -i inventory/tailscale/ansible_tailscale_inventory.py \
 #     --limit "tag_nomad_server,tag_nomad_client" \
 #     -u ansible

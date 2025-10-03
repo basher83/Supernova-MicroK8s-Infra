@@ -5,7 +5,7 @@
 # to ensure developers can verify both connectivity and authentication.
 #
 # Usage:
-#   uv run ansible-playbook playbooks/assessment/quick-status.yml
+#   ansible-playbook playbooks/assessment/quick-status.yml
 #
 # Note: Requires INFISICAL_UNIVERSAL_AUTH_CLIENT_ID and INFISICAL_UNIVERSAL_AUTH_CLIENT_SECRET environment variables
 #

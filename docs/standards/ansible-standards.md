@@ -331,13 +331,13 @@ collections:
 
 ```bash
 # Install all required collections
-uv run ansible-galaxy collection install -r requirements.yml
+ansible-galaxy collection install -r requirements.yml
 
 # Force reinstall/upgrade
-uv run ansible-galaxy collection install -r requirements.yml --force
+ansible-galaxy collection install -r requirements.yml --force
 
 # Install to specific location
-uv run ansible-galaxy collection install -r requirements.yml -p ./collections
+ansible-galaxy collection install -r requirements.yml -p ./collections
 ```
 
 #### Version Pinning Strategy
