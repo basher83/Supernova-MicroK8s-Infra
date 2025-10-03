@@ -26,15 +26,13 @@ terraform.tfvars
 *.auto.tfvars
 
 # Ansible
+ansible/.ansible-cache
+ansible/.ansible-retry
 .ansible/
-inventory.ini
-hosts
-#group_vars/
-#host_vars/
 *.retry
 *.log
 .vault_pass.txt
-#ansible.cfg
+
 
 # IDE/editor noise
 .vscode/
