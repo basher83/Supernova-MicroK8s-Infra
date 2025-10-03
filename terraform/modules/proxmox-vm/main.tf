@@ -12,6 +12,7 @@ resource "proxmox_virtual_environment_file" "vendor_data" {
 #cloud-config
 packages:
   - qemu-guest-agent
+package_update: true
 
 runcmd:
   - systemctl enable qemu-guest-agent
@@ -112,7 +113,8 @@ resource "proxmox_virtual_environment_vm" "vm" {
 
   lifecycle {
     ignore_changes = [
-      initialization[0].user_data_file_id
+      initialization[0].user_data_file_id,
+      initialization[0].vendor_data_file_id
     ]
   }
 }
