@@ -1,0 +1,109 @@
+---
+# Playbook to gather and analyze system users on Proxmox hosts
+# This playbook collects comprehensive user account information and categorizes users
+
+- name: Gather and analyze system users on Proxmox hosts
+  hosts: all
+  gather_facts: true
+  become: true
+
+  vars:
+    # UID thresholds for categorizing users
+    system_user_max_uid: 999  # Users with UID <= this are considered system users
+    min_user_uid: 1000        # Regular users typically start from this UID
+
+  tasks:
+    - name: Gather user database from /etc/passwd
+      ansible.builtin.getent:
+        database: passwd
+      register: passwd_entries
+
+    - name: Gather group database from /etc/group
+      ansible.builtin.getent:
+        database: group
+      register: group_entries
+
+    - name: Process and categorize users (generate JSON)
+      ansible.builtin.set_fact:
+        user_details_json: >
+          {% set users = [] %}
+          {% for username, userinfo in passwd_entries.ansible_facts.getent_passwd.items() %}
+          {% set user_groups = [] %}
+          {% for groupname, groupinfo in group_entries.ansible_facts.getent_group.items() %}
+            {% if username in groupinfo[3] | default([]) %}
+              {% set _ = user_groups.append(groupname) %}
+            {% endif %}
+          {% endfor %}
+          {% set user_detail = {
+            'username': username,
+            'uid': userinfo[1] | int,
+            'gid': userinfo[2] | int,
+            'comment': userinfo[3] | default(''),
+            'home': userinfo[4],
+            'shell': userinfo[5],
+            'groups': user_groups,
+            'is_system_user': (userinfo[1] | int) <= system_user_max_uid,
+            'is_regular_user': (userinfo[1] | int) >= min_user_uid
+          } %}
+          {% set _ = users.append(user_detail) %}
+          {% endfor %}
+          {{ users | sort(attribute='uid') | to_json }}
+
+    - name: Parse user details as proper list
+      ansible.builtin.set_fact:
+        user_details: "{{ user_details_json | from_json }}"
+
+    - name: Filter to only regular users
+      ansible.builtin.set_fact:
+        user_details: "{{ user_details | selectattr('is_regular_user') | list }}"
+
+    - name: Display user summary
+      ansible.builtin.debug:
+        msg: |
+          === REGULAR USER SUMMARY FOR {{ inventory_hostname }} ===
+          Total regular users (UID ≥ {{ min_user_uid }}): {{ user_details | length }}
+
+
+    - name: Display regular users
+      ansible.builtin.debug:
+        msg: |
+          === REGULAR USERS (UID ≥ {{ min_user_uid }}) ===
+          {% for user in user_details | sort(attribute='uid') %}
+          {{ user.username }} (UID: {{ user.uid }}, GID: {{ user.gid }}, Shell: {{ user.shell }})
+            Home: {{ user.home }}
+            Groups: {{ user.groups | join(', ') or 'None' }}
+            Comment: {{ user.comment or 'None' }}
+          {% endfor %}
+
+    - name: Check for users with suspicious characteristics
+      ansible.builtin.debug:
+        msg: |
+          === POTENTIAL SECURITY CONCERNS ===
+          {% set concerns = [] %}
+          {% for user in user_details %}
+            {% if user.shell not in ['/bin/bash', '/bin/sh', '/usr/bin/bash', '/usr/bin/sh', '/bin/zsh', '/usr/bin/zsh', '/bin/false', '/usr/sbin/nologin', '/sbin/nologin'] and user.is_regular_user %}
+              {% set _ = concerns.append({'type': 'unusual_shell', 'user': user.username, 'shell': user.shell}) %}
+            {% endif %}
+            {% if user.home == '/' and user.is_regular_user %}
+              {% set _ = concerns.append({'type': 'root_home', 'user': user.username, 'home': user.home}) %}
+            {% endif %}
+            {% if user.groups | length > 10 %}
+              {% set _ = concerns.append({'type': 'many_groups', 'user': user.username, 'group_count': user.groups | length}) %}
+            {% endif %}
+          {% endfor %}
+          {% if concerns %}
+          Found {{ concerns | length }} potential security concerns:
+          {% for concern in concerns %}
+            - {{ concern.user }}: {{ concern.type | replace('_', ' ') }}{% if concern.shell %} ({{ concern.shell }}){% endif %}{% if concern.group_count %} ({{ concern.group_count }} groups){% endif %}
+          {% endfor %}
+          {% else %}
+          No obvious security concerns found.
+          {% endif %}
+
+    - name: Export detailed user information to file
+      ansible.builtin.copy:
+        dest: "/tmp/user-audit-{{ inventory_hostname }}-{{ ansible_date_time.iso8601 }}.json"
+        content: "{{ user_details | to_nice_json }}"
+      delegate_to: localhost
+      become: false
+      when: user_details | length > 0
