@@ -86,30 +86,4 @@ locals {
     managed_by  = "terraform"
     created_at  = timestamp()
   }
-
-  # Ansible inventory for output
-  ansible_inventory = {
-    all = {
-      hosts = {
-        for name, config in local.vm_instances :
-        name => split("/", config.ip)[0]
-      }
-      children = {
-        microk8s = {
-          hosts = {
-            for name, config in local.vm_instances :
-            name => {}
-            if config.role == "microk8s-node"
-          }
-        }
-        jumpbox = {
-          hosts = {
-            for name, config in local.vm_instances :
-            name => {}
-            if config.role == "jumpbox"
-          }
-        }
-      }
-    }
-  }
 }
