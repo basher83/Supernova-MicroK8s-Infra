@@ -11,8 +11,6 @@ The infrastructure consists of:
 
 ## Multi-Node Deployment
 
-⚠️ **Important**: VM templates in Proxmox VE are node-specific. The template VM must exist on each target node.
-
 **Multi-Node Deployment**: Template VM 7024 exists on 'lloyd'. Terraform automatically clones from lloyd to target nodes.
 
 **Deployment Mapping**:
@@ -188,44 +186,6 @@ target_node_3 = "holly"  # Clones from lloyd → holly
 3. **Check Proxmox Version**:
    - Ensure Proxmox VE is updated to latest version
    - Some older versions have EFI disk configuration issues
-
-### Proxmox Lock Errors During Multi-VM Deployment
-
-**Issue**: Creating multiple VMs simultaneously can cause Proxmox VE lock errors due to I/O bottlenecks.
-
-**Root Cause**: Proxmox VE has limited I/O capacity when handling concurrent VM creation operations, especially with cloud image resizing.
-
-**Solutions**:
-
-1. **Sequential Deployment (Recommended)**:
-
-   ```bash
-   terraform apply -parallelism=1
-   ```
-
-2. **Targeted Deployment**:
-
-   ```bash
-   # Deploy jumpbox first
-   terraform apply -target=module.jumpbox
-
-   # Then deploy MicroK8s nodes
-   terraform apply -target=module.microk8s_nodes
-   ```
-
-3. **Retry on Failure**:
-   ```bash
-   # If lock errors occur, destroy and retry with sequential deployment
-   terraform destroy
-   terraform apply -parallelism=1
-   ```
-
-**Related Issues**:
-
-- [Proxmox Provider Issue #1929](https://github.com/Telmate/terraform-provider-proxmox/issues/1929)
-- [Proxmox Provider Issue #995](https://github.com/Telmate/terraform-provider-proxmox/issues/995)
-
-**Feature Request**: Consider supporting [OpenTofu provider parallelization configuration](https://github.com/opentofu/opentofu/issues/2466) with 👍 to help with prioritization.
 
 ## Best Practices
 
