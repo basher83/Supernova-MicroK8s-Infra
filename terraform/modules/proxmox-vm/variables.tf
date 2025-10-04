@@ -1,6 +1,11 @@
 variable "vm_id" {
   description = "The ID of the VM"
   type        = number
+
+  validation {
+    condition     = var.vm_id >= 100 && var.vm_id <= 999999999
+    error_message = "VM ID must be between 100 and 999999999."
+  }
 }
 
 variable "vm_name" {
@@ -45,7 +50,7 @@ variable "cpu_cores" {
 variable "cpu_type" {
   description = "CPU type"
   type        = string
-  default     = "host"
+  default     = "x86-64-v2-AES"
 }
 
 variable "machine_type" {
@@ -57,7 +62,12 @@ variable "machine_type" {
 variable "bios_type" {
   description = "BIOS type for VM"
   type        = string
-  default     = "ovmf"
+  default     = "seabios"
+
+  validation {
+    condition     = contains(["ovmf", "seabios"], var.bios_type)
+    error_message = "BIOS type must be either 'ovmf' or 'seabios'."
+  }
 }
 
 variable "efi_disk_enabled" {
@@ -94,18 +104,17 @@ variable "disk_discard" {
   description = "Enable discard for disk"
   type        = string
   default     = "on"
+
+  validation {
+    condition     = contains(["on", "ignore"], var.disk_discard)
+    error_message = "Disk discard must be either 'on' or 'ignore'."
+  }
 }
 
 variable "memory" {
   description = "Memory in MB"
   type        = number
   default     = 4096
-}
-
-variable "boot_order" {
-  description = "Boot order"
-  type        = list(string)
-  default     = ["virtio0"]
 }
 
 variable "network_interfaces" {
@@ -132,12 +141,6 @@ variable "ip_configs" {
     ipv6_gateway = optional(string)
   }))
   default = []
-}
-
-variable "user_data_file_id" {
-  description = "User data file ID for cloud-init"
-  type        = string
-  default     = null
 }
 
 variable "tags" {
