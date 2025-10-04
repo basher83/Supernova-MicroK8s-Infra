@@ -15,7 +15,7 @@
     
     # SSH authorized_keys file configuration
     # Path to the authorized_keys file on the Ansible controller
-    authorized_keys_file: "../files/terraform_authorized_keys"
+    authorized_keys_file: "{{ playbook_dir }}/../files/terraform_authorized_keys"
     
     # Sudoers configuration
     sudoers_commands:
@@ -75,7 +75,7 @@
 
     - name: Configure sudo privileges for user
       ansible.builtin.template:
-        src: ../templates/sudoers.j2
+        src: "{{ playbook_dir }}/../templates/sudoers.j2"
         dest: "/etc/sudoers.d/{{ system_username }}"
         owner: root
         group: root
