@@ -1,26 +1,3 @@
-# Create vendor data snippet to install qemu-guest-agent
-resource "proxmox_virtual_environment_file" "vendor_data" {
-  count = var.cloud_init_enabled ? 1 : 0
-
-  content_type = "snippets"
-  datastore_id = "local"
-  node_name    = var.target_node
-
-  source_raw {
-    file_name = "microk8s-vendor-${var.vm_id}.yaml"
-    data      = <<-EOF
-#cloud-config
-packages:
-  - qemu-guest-agent
-package_update: true
-
-runcmd:
-  - systemctl enable qemu-guest-agent
-  - systemctl start qemu-guest-agent
-    EOF
-  }
-}
-
 resource "proxmox_virtual_environment_vm" "vm" {
   vm_id       = var.vm_id
   name        = var.vm_name
@@ -35,16 +12,11 @@ resource "proxmox_virtual_environment_vm" "vm" {
   clone {
     vm_id        = var.template_id
     node_name    = var.template_node
-    full         = true
     datastore_id = var.disk_datastore_id
   }
 
-  # Ensure template is available on target node by waiting for it
-  # This addresses the cross-node template availability issue
-
   agent {
     enabled = var.qemu_agent
-    timeout = "5m"
   }
 
   cpu {
@@ -55,8 +27,6 @@ resource "proxmox_virtual_environment_vm" "vm" {
   memory {
     dedicated = var.memory
   }
-
-  boot_order = var.boot_order
 
   # Serial device required for Debian 12 / Ubuntu VMs to prevent kernel panic during boot disk resize
   serial_device {
