@@ -117,11 +117,11 @@ run = "ansible-lint ansible/"
 [tasks.lint-all]
 description = "Run all linting tasks"
 depends = [
-    "shellcheck",
-    "yaml-lint",
-    "markdown-lint",
-    "lint-prod",
-    "ansible-lint",
+  "shellcheck",
+  "yaml-lint",
+  "markdown-lint",
+  "lint-prod",
+  "ansible-lint",
 ]
 
 [tasks.validate-all]
@@ -131,11 +131,11 @@ depends = ["prod-validate"]
 [tasks.full-check]
 description = "Complete validation including formatting, linting, docs, and security"
 depends = [
-    "fmt-all",
-    "validate-all",
-    "lint-all",
-    "docs-check",
-    "infisical-scan",
+  "fmt-all",
+  "validate-all",
+  "lint-all",
+  "docs-check",
+  "infisical-scan",
 ]
 env = { TF_IN_AUTOMATION = "true", TF_INPUT = "false" }
 
