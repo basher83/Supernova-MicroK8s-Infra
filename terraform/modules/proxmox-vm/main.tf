@@ -26,6 +26,7 @@ resource "proxmox_virtual_environment_vm" "vm" {
 
   memory {
     dedicated = var.memory
+    floating  = var.memory # set equal to dedicated to enable ballooning
   }
 
   # Serial device required for Debian 12 / Ubuntu VMs to prevent kernel panic during boot disk resize
@@ -75,16 +76,6 @@ resource "proxmox_virtual_environment_vm" "vm" {
           }
         }
       }
-
-      user_data_file_id   = var.user_data_file_id
-      vendor_data_file_id = var.cloud_init_enabled ? proxmox_virtual_environment_file.vendor_data[0].id : null
     }
-  }
-
-  lifecycle {
-    ignore_changes = [
-      initialization[0].user_data_file_id,
-      initialization[0].vendor_data_file_id
-    ]
   }
 }
