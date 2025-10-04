@@ -1,87 +1,97 @@
-#!/bin/bash
-# Generate Ansible inventory files from Terraform outputs
-# Usage: ./scripts/generate-ansible-inventory.sh [environment]
+#!/usr/bin/env bash
 
 set -euo pipefail
 
-ENVIRONMENT="${1:-production}"
+# Script to generate Ansible inventory from Terraform outputs
+# Usage: ./scripts/generate-ansible-inventory.sh
+
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
-TERRAFORM_DIR="$PROJECT_ROOT/terraform"
-ANSIBLE_DIR="$PROJECT_ROOT/ansible"
-INVENTORY_DIR="$ANSIBLE_DIR/inventory"
+PROJECT_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
+TERRAFORM_DIR="${PROJECT_ROOT}/terraform"
+ANSIBLE_DIR="${PROJECT_ROOT}/ansible"
+INVENTORY_FILE="${ANSIBLE_DIR}/inventory/terraform.yml"
 
-# Ensure directories exist
-mkdir -p "$INVENTORY_DIR"
+# Colors for output
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+NC='\033[0m' # No Color
 
-# Check if we're in the right terraform directory
-if [[ ! -f "$TERRAFORM_DIR/main.tf" ]]; then
-    echo "Error: Terraform directory not found at $TERRAFORM_DIR"
-    echo "Expected terraform/main.tf to exist"
+echo -e "${GREEN}╔══════════════════════════════════════════════════════════════╗${NC}"
+echo -e "${GREEN}║        Generating Ansible Inventory from Terraform          ║${NC}"
+echo -e "${GREEN}╚══════════════════════════════════════════════════════════════╝${NC}"
+echo ""
+
+# Check if terraform directory exists
+if [ ! -d "${TERRAFORM_DIR}" ]; then
+    echo -e "${RED}Error: Terraform directory not found: ${TERRAFORM_DIR}${NC}"
     exit 1
 fi
 
-echo "🔄 Generating Ansible inventory for $ENVIRONMENT environment..."
-
-# Change to terraform directory and get outputs
-cd "$TERRAFORM_DIR"
-
-# Extract VM details from Terraform configuration
-echo "📡 Extracting VM details from Terraform configuration..."
-
-# For now, we'll read from the current terraform variables
-# In a real deployment, this would read from terraform outputs
-TERRAFORM_VARS_FILE="$TERRAFORM_DIR/terraform.tfvars"
-
-if [[ -f "$TERRAFORM_VARS_FILE" ]]; then
-    echo "Reading from terraform.tfvars..."
-    # This is a simplified version - in practice you'd want to parse the tfvars properly
-    # For now, we'll use the default values from variables.tf
-else
-    echo "No terraform.tfvars found, using default values..."
+# Check if terraform state exists
+if [ ! -f "${TERRAFORM_DIR}/terraform.tfstate" ]; then
+    echo -e "${RED}Error: Terraform state not found. Run 'terraform apply' first.${NC}"
+    exit 1
 fi
 
-# Generate YAML inventory based on our current cluster structure
-cat > "$INVENTORY_DIR/$ENVIRONMENT.yml" << EOF
----
-# Ansible Inventory for Supernova-MicroK8s $ENVIRONMENT Cluster
-# Auto-generated from Terraform configuration on $(date -u +"%Y-%m-%d %H:%M:%S UTC")
-all:
-  children:
-    jumpbox_vm:
-      hosts:
-        jumpbox:
-          ansible_host: "192.168.30.240"
-    microk8s_nodes:
-      children:
-        microk8s:
-          hosts:
-            microk8s-1:
-              ansible_host: "192.168.4.11"
-            microk8s-2:
-              ansible_host: "192.168.4.12"
-            microk8s-3:
-              ansible_host: "192.168.4.13"
-          vars:
-            ansible_ssh_common_args: "-o ProxyJump=ansible@192.168.30.240 -o UserKnownHostsFile=/dev/null -o ForwardAgent=yes"
-EOF
+# Change to terraform directory
+cd "${TERRAFORM_DIR}"
 
-echo "✅ Generated Ansible inventory: $INVENTORY_DIR/$ENVIRONMENT.yml"
-
-# Test the inventory
-cd "$ANSIBLE_DIR"
-echo "🧪 Testing inventory syntax..."
-if python3 -c "import yaml; yaml.safe_load(open('inventory/$ENVIRONMENT.yml'))" 2>/dev/null; then
-    echo "✅ Inventory syntax is valid"
-    echo ""
-    echo "📋 Inventory summary:"
-    echo "Generated inventory for Supernova-MicroK8s cluster with jumpbox and 3 MicroK8s nodes"
+# Generate inventory
+echo -e "${YELLOW}→${NC} Generating inventory from Terraform outputs..."
+if terraform output -raw ansible_inventory > "${INVENTORY_FILE}"; then
+    echo -e "${GREEN}✓${NC} Inventory generated successfully!"
+    echo -e "  Location: ${INVENTORY_FILE}"
 else
-    echo "❌ Inventory syntax error - please check the generated file"
+    echo -e "${RED}✗${NC} Failed to generate inventory"
+    exit 1
 fi
 
+# Validate the inventory file
 echo ""
-echo "🚀 Ready to use with Ansible:"
-echo "   cd ansible/"
-echo "   ansible all -i inventory/$ENVIRONMENT.yml -m ping"
-echo "   ansible-playbook -i inventory/$ENVIRONMENT.yml playbooks/playbook.yml"
+echo -e "${YELLOW}→${NC} Validating inventory file..."
+if [ -f "${INVENTORY_FILE}" ] && [ -s "${INVENTORY_FILE}" ]; then
+    echo -e "${GREEN}✓${NC} Inventory file is valid and not empty"
+
+    # Show file size and line count
+    LINES=$(wc -l < "${INVENTORY_FILE}")
+    echo -e "  Lines: ${LINES}"
+else
+    echo -e "${RED}✗${NC} Inventory file is invalid or empty"
+    exit 1
+fi
+
+# Optional: Test inventory with ansible-inventory
+echo ""
+echo -e "${YELLOW}→${NC} Testing inventory with Ansible..."
+cd "${ANSIBLE_DIR}"
+if command -v ansible-inventory &> /dev/null; then
+    if ansible-inventory -i "${INVENTORY_FILE}" --list > /dev/null 2>&1; then
+        echo -e "${GREEN}✓${NC} Ansible can parse the inventory successfully"
+    else
+        echo -e "${YELLOW}⚠${NC}  Warning: Ansible inventory validation failed"
+        echo -e "  This might be okay if VMs are not yet accessible"
+    fi
+else
+    echo -e "${YELLOW}⚠${NC}  Skipping Ansible validation (ansible-inventory not found)"
+fi
+
+# Display summary
+echo ""
+echo -e "${GREEN}╔══════════════════════════════════════════════════════════════╗${NC}"
+echo -e "${GREEN}║                    Summary                                   ║${NC}"
+echo -e "${GREEN}╚══════════════════════════════════════════════════════════════╝${NC}"
+echo ""
+echo -e "Inventory file: ${INVENTORY_FILE}"
+echo ""
+echo -e "${GREEN}Next steps:${NC}"
+echo -e "  1. View inventory:"
+echo -e "     cat ${INVENTORY_FILE}"
+echo ""
+echo -e "  2. Test connectivity:"
+echo -e "     cd ${ANSIBLE_DIR}"
+echo -e "     ansible all -i inventory/terraform.yml -m ping"
+echo ""
+echo -e "  3. Run playbook:"
+echo -e "     ansible-playbook -i inventory/terraform.yml playbooks/playbook.yml"
+echo ""
