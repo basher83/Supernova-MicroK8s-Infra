@@ -1,6 +1,4 @@
 locals {
-  cluster_name = "microk8s-homelab"
-
   # VM specifications based on role
   microk8s_node_spec = {
     cpu_cores = var.node_specs.cpu_cores
@@ -77,13 +75,5 @@ locals {
     microk8s-1 = { node = "lloyd", template_id = var.template_id, source_node = "lloyd" }
     microk8s-2 = { node = "mable", template_id = var.template_id, source_node = "lloyd" }
     microk8s-3 = { node = "holly", template_id = var.template_id, source_node = "lloyd" }
-  }
-
-  # Common tags for all resources
-  common_tags = {
-    environment = var.environment
-    project     = "supernova-microk8s"
-    managed_by  = "terraform"
-    created_at  = timestamp()
   }
 }
