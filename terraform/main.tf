@@ -1,67 +1,111 @@
-# Unified VM Deployment
-# Create all VMs using dynamic module creation with proper node assignment
-module "vm" {
-  for_each = local.vm_instances
+terraform {
+  required_version = ">=1.5.0"
+  required_providers {
+    proxmox = {
+      source  = "bpg/proxmox"
+      version = ">=0.53.1"
+    }
+  }
+}
 
-  source = "./modules/proxmox-vm"
+provider "proxmox" {
+  endpoint  = var.pve_api_url
+  api_token = "${var.pve_token_id}=${var.pve_token_secret}"
+  insecure  = false
+}
 
-  # Assign Proxmox node deterministically based on node_assignments
-  vm_id         = each.value.vm_id
-  vm_name       = each.value.name
-  target_node   = local.node_assignments[each.key].node
-  template_id   = local.node_assignments[each.key].template_id
-  template_node = local.node_assignments[each.key].source_node
+# Create Single VM
+module "vm_minimal_config" {
+  source = "github.com/trfore/terraform-bpg-proxmox//modules/vm-clone"
 
-  # VM specifications
-  cpu_cores         = each.value.cpu_cores
-  memory            = each.value.memory
-  machine_type      = var.machine_type
-  bios_type         = var.bios_type
-  efi_disk_enabled  = var.efi_disk_enabled
-  vm_description    = each.value.description
-  disk_datastore_id = var.disk_datastore_id
-  disk_size         = each.value.disk_size
-  disk_iothread     = var.disk_iothread
-  disk_discard      = var.disk_discard
+  node        = "pve"                   # required
+  vm_id       = 100                     # required
+  vm_name     = "vm-example-minimal"    # optional
+  template_id = 9000                    # required
+  ci_ssh_key  = "~/.ssh/id_ed25519.pub" # optional, add SSH key to "default" user
+}
 
-  # Network configuration
-  network_interfaces = each.value.dual_network ? [
+output "id" {
+  value = module.vm_minimal_config.id
+}
+
+output "public_ipv4" {
+  value = module.vm_minimal_config.public_ipv4
+}
+
+# Create Multiple VMs
+module "vm_multiple_config" {
+  source = "github.com/trfore/terraform-bpg-proxmox//modules/vm-clone"
+
+  for_each = tomap({
+    "vm-example-01" = {
+      id       = 101
+      template = 9000
+    },
+    "vm-example-02" = {
+      id       = 102
+      template = 9022
+    },
+  })
+
+  node        = "pve"                   # required
+  vm_id       = each.value.id           # required
+  vm_name     = each.key                # optional
+  template_id = each.value.template     # required
+  ci_ssh_key  = "~/.ssh/id_ed25519.pub" # optional, add SSH key to "default" user
+}
+
+output "id_multiple_vms" {
+  value = { for k, v in module.vm_multiple_config : k => v.id }
+}
+
+output "public_ipv4_multiple_vms" {
+  value = { for k, v in module.vm_multiple_config : k => flatten(v.public_ipv4) }
+}
+
+# Create Single VM with Additional Disks
+module "vm_disk_config" {
+  source = "github.com/trfore/terraform-bpg-proxmox//modules/vm-clone"
+
+  node        = "pve"                   # required
+  vm_id       = 103                     # required
+  vm_name     = "vm-example-disks"      # optional
+  template_id = 9000                    # required
+  ci_ssh_key  = "~/.ssh/id_ed25519.pub" # optional, add SSH key to "default" user
+  disks = [
     {
-      bridge = var.home_network.bridge
-      model  = "virtio"
+      disk_interface = "scsi0", # default cloud image boot drive
+      disk_size      = 10,
     },
     {
-      bridge = var.cluster_network.bridge
-      model  = "virtio"
-    }
-    ] : [
-    {
-      bridge = var.cluster_network.bridge
-      model  = "virtio"
-    }
-  ]
-
-  cloud_init_enabled = true
-  ip_configs = each.value.dual_network ? [
-    {
-      ipv4_address = each.value.ip
-      ipv4_gateway = each.value.gateway
+      disk_interface = "scsi1", # example add extra disk
+      disk_size      = 4,
     },
-    {
-      ipv4_address = "${each.value.cluster_ip}${var.cluster_network.cidr_suffix}"
-      ipv4_gateway = var.cluster_network.gateway
-    }
-    ] : [
-    {
-      ipv4_address = each.value.ip
-      ipv4_gateway = each.value.gateway
-    }
   ]
+}
 
-  tags = [
-    var.environment,
-    each.value.role,
-    local.node_assignments[each.key].node,
-    "microk8s-cluster"
-  ]
+# Create Single VM using UEFI
+module "vm_uefi_config" {
+  source = "github.com/trfore/terraform-bpg-proxmox//modules/vm-clone"
+
+  node        = "pve"                   # required
+  vm_id       = 104                     # required
+  vm_name     = "vm-example-uefi"       # optional
+  template_id = 9000                    # required
+  bios        = "ovmf"                  # optional, set UEFI bios
+  ci_ssh_key  = "~/.ssh/id_ed25519.pub" # optional, add SSH key to "default" user
+}
+
+# Create VM on Node ('pve1') With the Template Residing on Another Node ('pve')
+# - This will initially create the VM on the `template_node` then migrate the VM
+#   to the `node`.
+module "vm_centralized_templates" {
+  source = "github.com/trfore/terraform-bpg-proxmox//modules/vm-clone"
+
+  node          = "pve1"                     # required
+  vm_id         = 105                        # required
+  vm_name       = "vm-centralized-templates" # optional
+  template_node = "pve"                      # optional
+  template_id   = 9000                       # required
+  ci_ssh_key    = "~/.ssh/id_ed25519.pub"    # optional, add SSH key to "default" user
 }
