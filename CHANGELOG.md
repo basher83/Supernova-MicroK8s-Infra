@@ -18,6 +18,15 @@
 - *(docs)* Enhance terraform-docs integration and cleanup
 - *(terraform)* Implement cross-node VM cloning capability
 - *(terraform)* Implement VM tagging system
+- *(ansible)* Add system user management playbooks
+- *(mise)* Add task scripts for dependency management
+- *(mise)* Enhance configuration with Python venv and new tasks
+- *(terraform)* Add multi-node SSH configuration and vendor-data
+- *(terraform)* Enhance vendor data with SSH and user configuration
+- *(terraform)* Enhance VM module with validations and improved defaults
+- *(terraform)* Add comprehensive outputs for Ansible integration
+- *(ansible)* Add playbooks for Proxmox template building
+- *(scripts)* Add comprehensive Proxmox template builder script
 
 ### 🐛 Bug Fixes
 
@@ -31,12 +40,14 @@
 - *(terraform)* Remove unused variables and clean up configuration
 - *(terraform)* Add datastore_id to VM clone configuration
 - *(terraform)* Add EFI disk format and QEMU agent configuration
+- *(ansible)* Update configuration and playbook paths
 
 ### 💼 Other
 
 - Add Infisical secret management configuration
 - Add Claude Code development assistant configuration
 - *(docs)* Enhance PRD with comprehensive checklist template for Kubernetes deployment.
+- *(python)* Add Python dependencies for Ansible development
 
 ### 🚜 Refactor
 
@@ -47,6 +58,11 @@
 - *(terraform)* Correct infrastructure architecture to 4 VMs
 - *(terraform)* Switch to API token authentication for Proxmox provider
 - *(terraform)* Implement unified VM deployment with dynamic node assignment
+- *(ansible)* Restructure inventory to use SSH config
+- *(ansible)* Delegate connection settings to SSH config
+- *(terraform)* Centralize cloud-init vendor data configuration
+- *(terraform)* Remove cloud-init vendor data management
+- *(scripts)* Enhance inventory generation with Terraform integration
 
 ### 📚 Documentation
 
@@ -60,10 +76,16 @@
 - *(terraform)* Document Proxmox lock errors and mitigation strategies
 - *(terraform)* Document VM template availability and EFI disk configuration issues
 - *(prep)* Complete PREP-002 with implementation details and troubleshooting
+- *(changelog)* Update changelog for PREP-002 completion
+- *(ansible)* Remove uv references and standardize command usage
+- Add documentation for ansible commands and terraform files
+- *(terraform)* Update README removing outdated template warning
+- Add Proxmox command reference and troubleshooting guides
 
 ### 🎨 Styling
 
 - *(terraform)* Format terraform files for consistency
+- *(mise)* Fix indentation in task dependencies
 
 ### ⚙️ Miscellaneous Tasks
 
@@ -75,6 +97,12 @@
 - *(claude)* Remove old workflow command files
 - *(claude)* Improve command system with path corrections and date instruction
 - *(terraform)* Format and align parameter assignments
+- *(.gitignore)* Add backup entry for .mcp.json file
+- *(gitignore)* Clean up Ansible ignore patterns
+- *(terraform)* Remove ansible inventory locals from terraform config
+- *(terraform)* Remove outputs.tf file
+- *(ansible)* Clean up commented configuration paths
+- *(terraform)* Update Proxmox provider version to 0.84.1
 
 ### 🛡️ Security
 
