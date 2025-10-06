@@ -38,10 +38,63 @@ description = "Set up Ansible environment and install dependencies"
 dir = "ansible"
 run = "ansible-galaxy collection install -r requirements.yml"
 
+[tasks.ansible-install]
+description = "Install Ansible requirements"
+dir = "ansible"
+run = "ansible-galaxy install --force --role-file requirements.yml"
+
 [tasks.ansible-ping]
 description = "Test Ansible connectivity to all hosts"
 dir = "ansible"
 run = "ansible all -m ping -i inventory/all.yml"
+
+[tasks.pip-upgrade]
+description = "Upgrade Python requirements"
+run = """
+get_dependencies() {
+    pip freeze | grep -ve '-e'
+}
+
+for i in $(get_dependencies)
+do
+    package=$(echo $i | cut -d'=' -f1)
+    pip uninstall --yes $package
+done
+
+pip install --upgrade pip
+
+if [ -f requirements.txt ]
+then
+    pip install --upgrade --requirement=requirements.txt
+    get_dependencies > requirements.lock
+fi
+
+if [ -f requirements-dev.txt ]
+then
+    pip install --upgrade --requirement=requirements-dev.txt
+    get_dependencies > requirements-dev.lock
+fi
+"""
+
+[tasks.pip-install]
+description = "Install Python requirements"
+run = """
+if [ -f requirements.lock ]
+then
+    pip install --requirement=requirements.lock
+fi
+
+if [ -f requirements-dev.lock ]
+then
+    pip install --requirement=requirements-dev.lock
+fi
+
+if [ ! -f requirements.lock ] && [ ! -f requirements-dev.lock ]
+then
+    echo "Initial run detected. Setting up requirements."
+    mise run pip:upgrade
+fi
+"""
 
 [tasks.fmt]
 description = "Format all Terraform files recursively"

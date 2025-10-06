@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# mise description="Install ansible requirements"
+#MISE DESCRIPTION="Install ansible requirements"
 
 if [ -f requirements.yml ]
 then
