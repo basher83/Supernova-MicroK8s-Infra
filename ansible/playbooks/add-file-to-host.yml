@@ -1,16 +1,16 @@
 ---
 # Playbook to copy a file to a host
 # This playbook copies a file to a host and backs up the original if it differs from the copied version
-- name: Copy a new "microk8s-data.yml" file into place, backing up the original if it differs from the copied version
+- name: Copy a new file into place, backing up the original if it differs from the copied version
   hosts: all
   gather_facts: true
   become: true
 
   tasks:
-    - name: Copy a new "microk8s-data.yml" file into place, backing up the original if it differs from the copied version
+    - name: Copy a new file into place, backing up the original if it differs from the copied version
       ansible.builtin.copy:
-        src: "{{ playbook_dir }}/../files/microk8s-data.yml"
-        dest: /var/lib/vz/snippets/microk8s-data.yml
+        src: "{{ playbook_dir }}/../files/microk8s.yaml"
+        dest: /var/lib/vz/snippets/microk8s.yaml
         owner: root
         group: root
         mode: '0644'

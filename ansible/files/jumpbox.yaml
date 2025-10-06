@@ -12,12 +12,9 @@ users:
     - ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIFa5HX4EzWRRY+YhC979KqYtBPLvTOXtriwzql1uTthp
     - ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIL8lJBJBcFUTLgZ9eRx0c/XZau4NxVAdDm1sXMlMd1vL
     - ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIKls14HDdv2r2QIhGQfEluBmzrGI2cxjwtdkAWrc4ZRr
+package_upgrade: true
 packages:
   - qemu-guest-agent
-  - net-tools
-  - curl
-package_update: true
+
 runcmd:
-  - systemctl enable qemu-guest-agent
-  - systemctl start qemu-guest-agent
-  - echo "done" > /opt/.cloud-config.done
+  - [ systemctl, enable, --now, qemu-guest-agent ]
