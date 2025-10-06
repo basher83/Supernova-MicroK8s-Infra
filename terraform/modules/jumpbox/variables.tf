@@ -76,7 +76,7 @@ variable "machine_type" {
 variable "bios_type" {
   description = "BIOS type for VM"
   type        = string
-  default     = "ovmf"
+  default     = "seabios"
 }
 
 variable "efi_disk_enabled" {

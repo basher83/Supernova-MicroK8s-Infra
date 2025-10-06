@@ -9,17 +9,17 @@
   vars:
     # Required variables
     template_id: 7024
-    template_name: "prod24"
+    template_name: "microk8s-cluster"
     cloud_image_path: "/var/lib/vz/template/iso/ubuntu-24.04-server-cloudimg-amd64.img"
 
     # Hardware configuration
     bios_type: "seabios"           # seabios or ovmf (UEFI)
     cpu_cores: 2
     cpu_sockets: 1
-    cpu_type: "host"
+    cpu_type: "x86-64-v2-AES"
     machine_type: "q35"
     memory_mb: 2048
-    disk_resize: "32G"          # Increase boot disk size
+    disk_resize: ""          # Increase boot disk size
     storage_name: "local-lvm"
     scsi_controller: "virtio-scsi-pci"
     os_type: "l26"              # Linux 2.6+ kernel
@@ -31,17 +31,16 @@
     net_ip: "dhcp"              # Use 'dhcp' or static like '192.168.1.100/24'
     net_gateway: ""             # Only needed for static IP
 
-    # Secondary network (optional - leave empty to disable)
-    net2_bridge: ""             # e.g., "vmbr1"
+    net2_bridge: "vmbr1"             # e.g., "vmbr1"
     net2_type: "virtio"
-    net2_vlan: ""
+    net2_vlan: "2"
     net2_ip: "dhcp"
     net2_gateway: ""
 
     # Cloud-init configuration
     vendor_data_file: ""
-    ssh_keys_file: "~/.ssh/authorized_keys"           # Path to SSH public keys file (optional)
-    cloud_init_user: "ansible"         # Default user (optional, uses distro default if empty)
+    ssh_keys_file: ""           # Path to SSH public keys file (optional)
+    cloud_init_user: ""         # Default user (optional, uses distro default if empty)
 
     # Script options
     dry_run: false              # Set to true to test without creating
@@ -87,7 +86,7 @@
           --cpu-type {{ cpu_type }}
           --machine {{ machine_type }}
           --memory {{ memory_mb }}
-          --resize {{ disk_resize }}
+          {% if disk_resize | length > 0 %}--resize {{ disk_resize }}{% endif %}
           --storage {{ storage_name }}
           --scsihw {{ scsi_controller }}
           --os {{ os_type }}

@@ -30,12 +30,12 @@ ansible-playbook -i inventory/proxmox.yml playbooks/proxmox-build-template.yml
 This creates a template with default settings:
 
 - **VM ID**: 7024
-- **Name**: prod24
+- **Name**: microk8s-cluster
 - **Image**: Ubuntu 24.04 Server
 - **CPU**: 2 cores
 - **Memory**: 2048 MB
-- **Disk**: 32 GB
-- **BIOS**: OVMF (UEFI)
+- **Disk**: 4.5 GB
+- **BIOS**: seabios (UEFI)
 
 ### 2. Dry Run (Test Mode)
 
@@ -66,20 +66,20 @@ ansible-playbook -i inventory/proxmox.yml playbooks/proxmox-build-template.yml \
 | Variable           | Default                                                           | Description                  |
 | ------------------ | ----------------------------------------------------------------- | ---------------------------- |
 | `template_id`      | `7024`                                                            | Unique VM ID (100-999999999) |
-| `template_name`    | `prod24`                                                          | Template name in Proxmox     |
+| `template_name`    | `microk8s-cluster`                                                | Template name in Proxmox     |
 | `cloud_image_path` | `/var/lib/vz/template/iso/ubuntu-24.04-server-cloudimg-amd64.img` | Path to cloud image          |
 
 ### Hardware Configuration
 
 | Variable          | Default           | Options                  | Description                |
 | ----------------- | ----------------- | ------------------------ | -------------------------- |
-| `bios_type`       | `ovmf`            | `ovmf`, `seabios`        | BIOS type (UEFI or legacy) |
+| `bios_type`       | `seabios`         | `ovmf`, `seabios`        | BIOS type (UEFI or legacy) |
 | `cpu_cores`       | `2`               | `1-64`                   | Number of CPU cores        |
 | `cpu_sockets`     | `1`               | `1-4`                    | Number of CPU sockets      |
-| `cpu_type`        | `host`            | `host`, `kvm64`, etc.    | CPU type                   |
+| `cpu_type`        | `x86-64-v2-AES`   | `host`, `kvm64`, etc.    | CPU type                   |
 | `machine_type`    | `q35`             | `q35`, `pc`              | Machine type               |
 | `memory_mb`       | `2048`            | `512-65536`              | Memory in MB               |
-| `disk_resize`     | `32G`             | `1G-500G`                | Boot disk size increase    |
+| `disk_resize`     | `""`              | `1G-500G`                | Boot disk size increase    |
 | `storage_name`    | `local-lvm`       | `local-lvm`, `local-zfs` | Proxmox storage            |
 | `scsi_controller` | `virtio-scsi-pci` | `virtio-scsi-pci`, `lsi` | SCSI controller            |
 | `os_type`         | `l26`             | `l26`, `win10`, etc.     | OS type                    |
@@ -100,9 +100,9 @@ ansible-playbook -i inventory/proxmox.yml playbooks/proxmox-build-template.yml \
 
 | Variable       | Default  | Description                              |
 | -------------- | -------- | ---------------------------------------- |
-| `net2_bridge`  | `""`     | Second network bridge (empty = disabled) |
+| `net2_bridge`  | `vmbr1`  | Second network bridge (empty = disabled) |
 | `net2_type`    | `virtio` | Second network card type                 |
-| `net2_vlan`    | `""`     | Second VLAN tag                          |
+| `net2_vlan`    | `2`      | Second VLAN tag                          |
 | `net2_ip`      | `dhcp`   | Second IP address                        |
 | `net2_gateway` | `""`     | Second gateway                           |
 

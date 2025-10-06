@@ -31,8 +31,9 @@ I've identified the problem with VM 311 (microk8s-1). Here's what I found:
 
 Enable VLAN-aware bridging on all nodes and configure VM network interfaces with VLAN tag 2.
 
-1. Phase 1: Enable VLAN-aware bridging on all nodes
-   Enable VLAN filtering on vmbr1 bridge on each node (lloyd, mable, holly):
+### Phase 1: Enable VLAN-aware bridging on all nodes
+
+Enable VLAN filtering on vmbr1 bridge on each node (lloyd, mable, holly):
 
 1. **Backup current network configuration**:
 
@@ -61,8 +62,9 @@ Enable VLAN-aware bridging on all nodes and configure VM network interfaces with
 
 **Note**: This must be completed on all three nodes before proceeding to Phase 2.
 
-2. Phase 2: Configure VM network interfaces with VLAN tag 2
-   Modify each VM's network configuration to add VLAN tag 2:
+### Phase 2: Configure VM network interfaces with VLAN tag 2
+
+Modify each VM's network configuration to add VLAN tag 2:
 
 **On node lloyd**:
 
@@ -95,7 +97,8 @@ Enable VLAN-aware bridging on all nodes and configure VM network interfaces with
 qm config <VMID> | grep net
 ```
 
-3. Phase 3: Restart VMs and verify connectivity
+### Phase 3: Restart VMs and verify connectivity
+
 1. **Restart each VM** to apply network changes:
 
    ```bash
