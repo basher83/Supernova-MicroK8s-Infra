@@ -27,6 +27,8 @@
 - *(terraform)* Add comprehensive outputs for Ansible integration
 - *(ansible)* Add playbooks for Proxmox template building
 - *(scripts)* Add comprehensive Proxmox template builder script
+- *(ansible)* Add playbook for enabling VLAN-aware bridging on Proxmox nodes
+- *(ansible)* Add playbook for initial MicroK8s installation
 
 ### 🐛 Bug Fixes
 
@@ -63,6 +65,8 @@
 - *(terraform)* Centralize cloud-init vendor data configuration
 - *(terraform)* Remove cloud-init vendor data management
 - *(scripts)* Enhance inventory generation with Terraform integration
+- *(ansible)* Restructure cloud-init snippets for template specialization
+- *(ansible)* Update Proxmox template configuration and documentation
 
 ### 📚 Documentation
 
@@ -81,6 +85,8 @@
 - Add documentation for ansible commands and terraform files
 - *(terraform)* Update README removing outdated template warning
 - Add Proxmox command reference and troubleshooting guides
+- *(research)* Add comprehensive Proxmox Terraform provider comparison
+- *(changelog)* Update changelog with recent infrastructure improvements
 
 ### 🎨 Styling
 
