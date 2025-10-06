@@ -274,3 +274,4 @@ Setup public SSH keys (one key per line, OpenSSH format).
 
 [bastientraverse.com](https://bastientraverse.com/en/proxmox-optimized-cloud-init-templates/)
 [cloudinit.readthedocs.io](https://cloudinit.readthedocs.io/en/latest/index.html)
+[trfore.com](https://www.trfore.com/posts/golden-images-and-proxmox-templates-using-cloud-init/)
