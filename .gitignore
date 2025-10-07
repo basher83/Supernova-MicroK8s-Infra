@@ -13,6 +13,7 @@ configuration/vars/*
 # Terraform CLI dirs
 .terraform/
 **/.terraform/*
+terraform/tfplan
 
 # Terraform lock files (managed by Scalr)
 .terraform.lock.hcl
@@ -25,15 +26,13 @@ terraform.tfvars
 *.auto.tfvars
 
 # Ansible
+ansible/.ansible-cache
+ansible/.ansible-retry
 .ansible/
-inventory.ini
-hosts
-#group_vars/
-#host_vars/
 *.retry
 *.log
 .vault_pass.txt
-#ansible.cfg
+
 
 # IDE/editor noise
 .vscode/
@@ -50,7 +49,7 @@ Thumbs.db
 .mise.local.toml
 
 .mcp.json
-
+.mcp.json.backup
 
 .envrc
 infrastructure/environments/production/terraform.tfvars.local

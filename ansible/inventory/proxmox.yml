@@ -1,0 +1,11 @@
+all:
+  children:
+    nexus_cluster:
+      hosts:
+        alpha:
+        bravo:
+    doggos_cluster:
+      hosts:
+        holly:
+        lloyd:
+        mable:

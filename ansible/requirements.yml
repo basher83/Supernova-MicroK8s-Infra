@@ -1,0 +1,19 @@
+---
+# Ansible Galaxy requirements file
+# Install with: uv runansible-galaxy install -r requirements.yml
+
+collections:
+  # General community modules
+  - name: community.general
+    version: ">=8.0.0"
+  # Proxmox modules
+  - name: community.proxmox
+    version: ">=1.0.0"
+  # Infisical modules
+  - name: infisical.vault
+    version: ">=1.1.0"
+  # Additional useful collections
+  - name: ansible.posix
+    version: ">=1.5.0"
+  - name: ansible.utils
+    version: ">=2.10.0"

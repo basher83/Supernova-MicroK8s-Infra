@@ -15,12 +15,19 @@ sections:
     - footer
 content: |-
   {{ .Header }}
+
   {{ .Requirements }}
+
   {{ .Providers }}
+
   {{ .Modules }}
+
   {{ .Resources }}
+
   {{ .Inputs }}
+
   {{ .Outputs }}
+
   {{ .Footer }}
 output:
   file: README.md

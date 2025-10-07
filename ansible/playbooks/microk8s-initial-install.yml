@@ -1,0 +1,71 @@
+---
+# Playbook: Initial MicroK8s Installation and Configuration
+# Purpose: Install MicroK8s snap and configure user permissions
+# Target: microk8s_nodes group
+#
+# Usage:
+#   ansible-playbook -i inventory/production.yml playbooks/microk8s-initial-install.yml
+
+- name: Initial MicroK8s Installation and Configuration
+  hosts: microk8s_nodes
+  become: true
+  gather_facts: true
+
+  tasks:
+    - name: Install MicroK8s via snap
+      community.general.snap:
+        name: microk8s
+        classic: true
+        state: present
+      register: microk8s_install
+
+    - name: Display installation status
+      ansible.builtin.debug:
+        msg: >
+          {% if microk8s_install.changed %}
+          MicroK8s installed successfully
+          {% else %}
+          MicroK8s already installed
+          {% endif %}
+
+    - name: Add ansible user to microk8s group
+      ansible.builtin.user:
+        name: ansible
+        groups: microk8s
+        append: true
+      register: user_group
+
+    - name: Create .kube directory for ansible user
+      ansible.builtin.file:
+        path: /home/ansible/.kube
+        state: directory
+        owner: ansible
+        group: ansible
+        mode: '0755'
+
+    - name: Set ownership of .kube directory recursively
+      ansible.builtin.file:
+        path: /home/ansible/.kube
+        owner: ansible
+        group: ansible
+        recurse: true
+        state: directory
+
+    - name: Wait for MicroK8s to be ready
+      ansible.builtin.command: microk8s status --wait-ready
+      register: microk8s_status
+      changed_when: false
+      retries: 5
+      delay: 10
+
+    - name: Display MicroK8s status
+      ansible.builtin.debug:
+        var: microk8s_status.stdout_lines
+
+    - name: Reminder for group membership
+      ansible.builtin.debug:
+        msg: |
+          IMPORTANT: Group membership change requires re-login.
+          The ansible user needs to log out and back in for microk8s group to take effect.
+          Alternatively, use 'newgrp microk8s' or run subsequent commands with sudo.
+      when: user_group.changed

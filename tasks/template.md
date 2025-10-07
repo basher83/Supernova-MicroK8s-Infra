@@ -1,6 +1,6 @@
 ---
 Task: <Brief description - be specific>
-Task ID: <[PREFIX]-XXX - CI/IaC/CONFIG/DOCS/TEST/SEC>
+Task ID: <[PREFIX]-XXX - use your project-specific prefix and sequential number>
 Priority: <P0|P1|P2 - P0=Critical, P1=Important, P2=Nice-to-have>
 Estimated Time: <X hours - realistic estimate>
 Dependencies: <Task IDs or "None" - explicit dependencies>
@@ -15,40 +15,23 @@ Updated: <Run: date +"%Y-%m-%d" - update when status changes>
 
 ## Prerequisites
 
-- [ ] Clean working directory (`git status`)
-- [ ] Required tools installed (`mise doctor`)
-- [ ] <Dependencies that must be completed>
+- [ ] <Required conditions before starting>
 - [ ] <Access or permissions needed>
+- [ ] <Dependencies that must be completed>
 
 ## Implementation Steps
 
 ### 1. **<First major step>**
 
-```bash
-# Example commands for this step
-cd /home/basher83/dev/Supernova-MicroK8s-Infra
-<specific commands>
-```
-
-<Detailed instructions>
+<Detailed instructions with commands>
 
 ### 2. **<Second major step>**
 
-```bash
-# Example commands for this step
-<specific commands>
-```
-
-<Detailed instructions>
+<Detailed instructions with commands>
 
 ### 3. **<Third major step>**
 
-```bash
-# Example commands for this step
-<specific commands>
-```
-
-<Detailed instructions>
+<Detailed instructions with commands>
 
 ## Success Criteria
 
@@ -59,34 +42,22 @@ cd /home/basher83/dev/Supernova-MicroK8s-Infra
 
 ## Validation
 
+<Commands or procedures to verify task completion>
+
 ```bash
-# Terraform validation
-cd terraform
-terraform fmt -recursive -check
-terraform validate
-mise run prod-validate
-
-# Ansible validation
-cd ansible
-ansible-lint
-ansible-playbook -i inventory/hosts.yml playbooks/playbook.yml --syntax-check
-
-# Pre-commit validation
-pre-commit run --all-files
-
-# Full project validation
-mise run full-check
+# Replace with validation commands specific to your tech stack
+# Examples:
+# For web apps: npm run build, npm run lint, npm run test
+# For databases: dbt build, sqlfluff lint, pg_dump --schema-only
+# For IaC: terraform validate, packer validate, ansible-lint
+# For containers: docker build, docker-compose up, k8s validate
 ```
 
 Expected output:
-- All validation commands exit with code 0
-- No errors or warnings in linter output
-- <Specific success indicators>
 
-## Files to Modify
-
-- [ ] `path/to/file1` - <Description of changes>
-- [ ] `path/to/file2` - <Description of changes>
+- <What successful validation looks like>
+- <Key indicators of completion>
+- <Exit codes or status messages to expect>
 
 ## Notes
 
@@ -96,8 +67,6 @@ Expected output:
 
 ## References
 
-- [Project README](../../README.md)
-- [Terraform Docs](../../terraform/README.md)
-- [Ansible Roles](../../ansible/roles/)
-- [MicroK8s Documentation](https://microk8s.io/docs)
-- [Proxmox Provider](https://registry.terraform.io/providers/bpg/proxmox/latest/docs)
+- <Relevant documentation links>
+- <Related ADRs or guides>
+- <External resources>

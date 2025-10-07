@@ -1,27 +1,14 @@
 # Ansible Inventory for Supernova-MicroK8s production Cluster
-# Auto-generated from Terraform configuration on 2025-09-24 20:57:47 UTC
+# Auto-generated from Terraform configuration
 all:
   children:
     jumpbox_vm:
       hosts:
         jumpbox:
-          ansible_host: "192.168.1.240"
-    k8s_nodes:
+    microk8s_nodes:
       children:
-        masters:
+        microk8s:
           hosts:
-            master-1:
-              ansible_host: "192.168.3.11"
-            master-2:
-              ansible_host: "192.168.3.12"
-        workers:
-          hosts:
-            worker-1:
-              ansible_host: "192.168.3.21"
-            worker-2:
-              ansible_host: "192.168.3.22"
-            worker-3:
-              ansible_host: "192.168.3.23"
-      vars:
-        # SSH proxy configuration for cluster nodes
-        ansible_ssh_common_args: "-o ProxyJump=ansible@192.168.1.240 -o UserKnownHostsFile=/dev/null -o ForwardAgent=yes"
+            microk8s-1:
+            microk8s-2:
+            microk8s-3:

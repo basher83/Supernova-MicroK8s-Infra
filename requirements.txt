@@ -1,0 +1,4 @@
+ansible-dev-tools
+infisicalsdk
+proxmoxer
+requests

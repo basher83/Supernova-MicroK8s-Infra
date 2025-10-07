@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+#MISE DESCRIPTION="Install ansible requirements"
+
+if [ -f requirements.yml ]
+then
+    ansible-galaxy install \
+        --force \
+        --role-file requirements.yml
+fi
