@@ -7,7 +7,7 @@ resource "proxmox_virtual_environment_vm" "k8s_nodes" {
   started   = true
 
   clone {
-    vm_id = var.template_id
+    vm_id = var.vm_clone_template_id
     full  = true
   }
 
@@ -50,7 +50,7 @@ resource "proxmox_virtual_environment_vm" "jumpbox" {
   started   = true
 
   clone {
-    vm_id = var.template_id
+    vm_id = var.vm_clone_template_id
     full  = true
   }
 
