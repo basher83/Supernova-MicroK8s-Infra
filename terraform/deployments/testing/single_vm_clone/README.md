@@ -1,0 +1,44 @@
+# Terraform test to clone template for vm
+
+Template was create on host with:
+
+```bash
+qm create 2006 --name template-ubuntu-test --description "Dual NIC, vendor-data" --ostype l26 --machine q35 --cpu host --cores 2 --memory 4096 --balloon 4096 --scsihw virtio-scsi-single --scsi0 local-lvm:0,import-from=/var/lib/vz/template/iso/ubuntu-24.04-server-cloudimg-amd64.img,discard=on,iothread=1,ssd=1 --net0 virtio,bridge=vmbr0 --net1 virtio,bridge=vmbr1 --ipconfig0 ip=dhcp --ipconfig1 ip=dhcp --nameserver "8.8.8.8 1.1.1.1" --rng0 source=/dev/urandom --tablet 0 --boot order=scsi0 --vga serial0 --serial0 socket --ide2 local-lvm:cloudinit --agent 1,fstrim_cloned_disks=1 --bios ovmf --efidisk0 local-lvm:0,efitype=4m,pre-enrolled-keys=0 --cicustom "vendor=local:snippets/vendor-data.yaml" --tags ubuntu --template 1
+```
+
+    <!-- BEGIN_TF_DOCS -->
+## Requirements
+
+| Name | Version |
+|------|---------|
+| <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | ~> 1.9 |
+| <a name="requirement_proxmox"></a> [proxmox](#requirement\_proxmox) | >= 0.84.1 |
+
+## Providers
+
+No providers.
+
+## Modules
+
+| Name | Source | Version |
+|------|--------|---------|
+| <a name="module_pve_vm"></a> [pve\_vm](#module\_pve\_vm) | ../../../modules/vm | n/a |
+
+## Resources
+
+No resources.
+
+## Inputs
+
+| Name | Description | Type | Default | Required |
+|------|-------------|------|---------|:--------:|
+| <a name="input_proxmox_api_token_id"></a> [proxmox\_api\_token\_id](#input\_proxmox\_api\_token\_id) | API Token ID. | `string` | n/a | yes |
+| <a name="input_proxmox_api_token_secret"></a> [proxmox\_api\_token\_secret](#input\_proxmox\_api\_token\_secret) | API Token Secret. | `string` | n/a | yes |
+| <a name="input_proxmox_host"></a> [proxmox\_host](#input\_proxmox\_host) | Proxmox API Host. has to be in thr form IP:PORT. | `string` | n/a | yes |
+| <a name="input_proxmox_node"></a> [proxmox\_node](#input\_proxmox\_node) | Which node in the Proxmox cluster to start the virtual machine on during creation. | `string` | n/a | yes |
+| <a name="input_proxmox_ssk_private_key"></a> [proxmox\_ssk\_private\_key](#input\_proxmox\_ssk\_private\_key) | The SSH private key to be used when connecting via SSH. | `string` | n/a | yes |
+
+## Outputs
+
+No outputs.
+<!-- END_TF_DOCS -->
