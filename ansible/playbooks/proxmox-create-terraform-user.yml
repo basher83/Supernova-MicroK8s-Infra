@@ -35,7 +35,7 @@
 
     # Proxmox API connection details for administrative tasks
     # Required for community.proxmox modules to authenticate
-    proxmox_api_host: "{{ inventory_hostname }}"
+    proxmox_api_host: "{{ ansible_host | default(inventory_hostname) }}"
     proxmox_api_user: "root@pam"
     # Use environment variable for password (export PROXMOX_PASSWORD='your-password')
     # Or set directly: proxmox_api_password: "your-password" (not recommended)
@@ -158,8 +158,9 @@
         api_user: "{{ proxmox_api_user }}"
         api_password: "{{ proxmox_api_password }}"
         validate_certs: "{{ proxmox_validate_certs }}"
+      delegate_to: localhost
+      become: false
       register: group_result
-
     - name: Display group creation status
       ansible.builtin.debug:
         msg: "{{ proxmox_group_name }} group {{ 'created' if group_result.changed else 'already exists' }}"
@@ -176,6 +177,8 @@
         api_user: "{{ proxmox_api_user }}"
         api_password: "{{ proxmox_api_password }}"
         validate_certs: "{{ proxmox_validate_certs }}"
+      delegate_to: localhost
+      become: false
       register: acl_result
 
     - name: Display ACL configuration status
@@ -194,6 +197,8 @@
         api_user: "{{ proxmox_api_user }}"
         api_password: "{{ proxmox_api_password }}"
         validate_certs: "{{ proxmox_validate_certs }}"
+      delegate_to: localhost
+      become: false
       register: pam_user_result
 
     - name: Display PAM user creation status
