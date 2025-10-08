@@ -13,7 +13,7 @@
     cloud_image_path: "/var/lib/vz/template/iso/ubuntu-24.04-server-cloudimg-amd64.img"
 
     # Hardware configuration
-    bios_type: "seabios"           # seabios or ovmf (UEFI)
+    bios_type: "ovmf"           # seabios or ovmf (UEFI)
     cpu_cores: 2
     cpu_sockets: 1
     cpu_type: "x86-64-v2-AES"

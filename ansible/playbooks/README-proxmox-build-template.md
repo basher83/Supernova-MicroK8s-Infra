@@ -35,7 +35,7 @@ This creates a template with default settings:
 - **CPU**: 2 cores
 - **Memory**: 2048 MB
 - **Disk**: 4.5 GB
-- **BIOS**: seabios (UEFI)
+- **BIOS**: ovmf (UEFI)
 
 ### 2. Dry Run (Test Mode)
 
@@ -73,7 +73,7 @@ ansible-playbook -i inventory/proxmox.yml playbooks/proxmox-build-template.yml \
 
 | Variable          | Default           | Options                  | Description                |
 | ----------------- | ----------------- | ------------------------ | -------------------------- |
-| `bios_type`       | `seabios`         | `ovmf`, `seabios`        | BIOS type (UEFI or legacy) |
+| `bios_type`       | `ovmf`         | `ovmf`, `seabios`        | BIOS type (UEFI or legacy) |
 | `cpu_cores`       | `2`               | `1-64`                   | Number of CPU cores        |
 | `cpu_sockets`     | `1`               | `1-4`                    | Number of CPU sockets      |
 | `cpu_type`        | `x86-64-v2-AES`   | `host`, `kvm64`, etc.    | CPU type                   |

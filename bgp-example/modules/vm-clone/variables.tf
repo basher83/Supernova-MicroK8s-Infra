@@ -53,7 +53,7 @@ variable "os_type" {
 variable "bios" {
   description = "VM bios, setting to `ovmf` will automatically create a EFI disk."
   type        = string
-  default     = "seabios"
+  default     = "ovmf"
   validation {
     condition     = contains(["seabios", "ovmf"], var.bios)
     error_message = "Invalid bios setting: ${var.bios}. Valid options: 'seabios' or 'ovmf'."
