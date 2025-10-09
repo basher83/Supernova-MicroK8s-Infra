@@ -1,4 +1,33 @@
 #SPDX-License-Identifier: MIT-0
-
-
+---
 # defaults file for microk8s_cluster
+
+# Enable high-availability cluster formation
+microk8s_enable_ha: true
+
+# Hostgroup whose members will form high-availability cluster
+# This should match your inventory group name for master/control-plane nodes
+microk8s_group_ha: "microk8s"
+
+# Regex to select IP address for joining nodes in HA setup
+# Used to filter the correct join URL in multi-NIC environments
+microk8s_ip_regex_ha: "([0-9]{1,3}[\\.])3}[0-9]{1,3}"
+
+# Hostgroup whose members will act as worker nodes only
+# Workers do not run control-plane components
+microk8s_group_workers: "microk8s_workers"
+
+# Add /etc/hosts entries for all cluster members (recommended for stable networking)
+microk8s_add_hosts_entries: true
+
+# Add worker nodes to /etc/hosts file
+microk8s_add_workers_to_hostfile: true
+
+# When /snap/bin is not in the PATH
+microk8s_bin_path: ""
+
+# Cluster join timeout (seconds)
+microk8s_join_timeout: 300
+
+# Wait time between node joins (seconds) - prevents cluster instability
+microk8s_join_delay: 10

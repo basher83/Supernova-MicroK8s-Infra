@@ -1,4 +1,32 @@
 #SPDX-License-Identifier: MIT-0
-
-
+---
 # defaults file for microk8s_install
+
+# MicroK8s version to install (channel format: X.Y/stable, X.Y/edge, X.Y/beta)
+microk8s_version: "1.30/stable"
+
+# Disable snap autoupdate (recommended for production)
+microk8s_disable_snap_autoupdate: true
+
+# When /snap/bin is not in the PATH (automatically detected)
+microk8s_bin_path: ""
+
+# Users to add to microk8s group for kubectl access
+# Example: ["ubuntu", "ansible", "admin"]
+microk8s_users:
+  - ansible
+
+# Create kubectl and helm aliases
+microk8s_create_kubectl_alias: true
+microk8s_create_helm_alias: true
+
+# Custom CSR template for certificate customization
+# Set to template file path to enable custom certificates with additional SANs
+# Example: microk8s_csr_template: "templates/csr.conf.template.j2"
+# microk8s_csr_template: null
+
+# Trust MicroK8s CA certificates in system trust store
+microk8s_trust_ca_certificates: true
+
+# Install Raspberry Pi specific packages (auto-detected)
+microk8s_install_raspi_packages: true

@@ -1,4 +1,105 @@
 #SPDX-License-Identifier: MIT-0
-
-
+---
 # tasks file for microk8s-addons
+
+- name: Get current MicroK8s addon status
+  become: true
+  ansible.builtin.command:
+    cmd: "{{ microk8s_bin_path }}microk8s status --format yaml"
+  changed_when: false
+  register: microk8s_status_raw
+  check_mode: false
+
+- name: Parse MicroK8s status
+  ansible.builtin.set_fact:
+    microk8s_status: "{{ microk8s_status_raw.stdout | from_yaml }}"
+
+- name: Display current addon status
+  ansible.builtin.debug:
+    msg: "Current addons: {{ microk8s_status.addons | map(attribute='name') | list }}"
+    verbosity: 1
+
+- name: Enable addons with parameters
+  become: true
+  ansible.builtin.command:
+    cmd: "{{ microk8s_bin_path }}microk8s enable {{ item.name }}:{{ microk8s_plugins[item.name] }}"
+  loop: "{{ microk8s_status.addons }}"
+  loop_control:
+    label: "{{ item.name }}"
+  when:
+    - item.status == 'disabled'
+    - item.name in microk8s_plugins
+    - microk8s_plugins[item.name]
+    - microk8s_plugins[item.name] is string
+    - microk8s_plugins[item.name] != 'true'
+    - microk8s_plugins[item.name] | string != 'True'
+  register: enable_addon_with_params
+  changed_when: "'enabled' in enable_addon_with_params.stdout or 'Enabling' in enable_addon_with_params.stdout"
+
+- name: Enable boolean addons
+  become: true
+  ansible.builtin.command:
+    cmd: "{{ microk8s_bin_path }}microk8s enable {{ item.name }}"
+  loop: "{{ microk8s_status.addons }}"
+  loop_control:
+    label: "{{ item.name }}"
+  when:
+    - item.status == 'disabled'
+    - item.name in microk8s_plugins
+    - microk8s_plugins[item.name] is boolean
+    - microk8s_plugins[item.name] | bool
+  register: enable_addon_bool
+  changed_when: "'enabled' in enable_addon_bool.stdout or 'Enabling' in enable_addon_bool.stdout"
+
+- name: Disable unwanted addons
+  become: true
+  ansible.builtin.command:
+    cmd: "{{ microk8s_bin_path }}microk8s disable {{ item.name }}"
+  loop: "{{ microk8s_status.addons }}"
+  loop_control:
+    label: "{{ item.name }}"
+  when:
+    - item.status == 'enabled'
+    - item.name in microk8s_plugins
+    - not microk8s_plugins[item.name] | bool
+  register: disable_addon
+  changed_when: "'disabled' in disable_addon.stdout or 'Disabling' in disable_addon.stdout"
+
+- name: Add Helm repositories
+  become: true
+  ansible.builtin.command:
+    cmd: "{{ microk8s_bin_path }}microk8s helm3 repo add {{ item.name }} {{ item.url }}"
+  loop: "{{ microk8s_helm_repositories }}"
+  when:
+    - "'helm3' in microk8s_plugins"
+    - microk8s_plugins.helm3 | bool
+    - microk8s_helm_repositories is defined
+    - microk8s_helm_repositories | length > 0
+  register: helm_repo_add
+  changed_when: "'has been added' in helm_repo_add.stdout"
+  failed_when:
+    - helm_repo_add.rc > 0
+    - "'already exists' not in helm_repo_add.stderr"
+
+- name: Update Helm repositories
+  become: true
+  ansible.builtin.command:
+    cmd: "{{ microk8s_bin_path }}microk8s helm3 repo update"
+  when:
+    - "'helm3' in microk8s_plugins"
+    - microk8s_plugins.helm3 | bool
+    - helm_repo_add is changed
+  register: helm_repo_update
+  changed_when: "'Update Complete' in helm_repo_update.stdout"
+
+- name: Get final addon status
+  become: true
+  ansible.builtin.command:
+    cmd: "{{ microk8s_bin_path }}microk8s status"
+  changed_when: false
+  register: final_addon_status
+
+- name: Display final addon status
+  ansible.builtin.debug:
+    msg: "{{ final_addon_status.stdout_lines }}"
+    verbosity: 1

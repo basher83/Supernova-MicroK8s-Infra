@@ -1,4 +1,92 @@
 #SPDX-License-Identifier: MIT-0
-
-
+---
 # defaults file for microk8s-addons
+
+# DNS resolvers for CoreDNS addon
+microk8s_dns_resolvers: "8.8.8.8,8.8.4.4"
+
+# Registry size for private image registry
+microk8s_registry_size: "20Gi"
+
+# When /snap/bin is not in the PATH
+microk8s_bin_path: ""
+
+# MicroK8s Addons Configuration
+# Set to true to enable, false to disable, or string for addons with parameters
+microk8s_plugins:
+  # Core Addons
+  dns: "{{ microk8s_dns_resolvers }}"          # CoreDNS
+  host-access: true                             # Allow Pods connecting to Host services smoothly
+  ingress: true                                 # Ingress controller for external access
+  metrics-server: true                          # K8s Metrics Server for API access to service metrics
+  rbac: true                                    # Role-Based Access Control for authorisation
+  hostpath-storage: true                        # Storage class; allocates storage from host directory
+
+  # Registry and Helm
+  registry: "size={{ microk8s_registry_size }}"  # Private image registry exposed on localhost:32000
+  helm3: true                                    # Helm 3 - Kubernetes package manager
+  helm: false                                    # Helm 2 (deprecated)
+
+  # Monitoring and Observability
+  dashboard: true                                # The Kubernetes dashboard
+  prometheus: false                              # Prometheus operator for monitoring and logging
+  observability: false                           # Lightweight observability stack (Grafana, Prometheus, etc.)
+
+  # Networking
+  metallb: false                                 # Loadbalancer for your Kubernetes cluster
+                                                 # Example: metallb: "10.0.0.1-10.0.0.10"
+  cilium: false                                  # SDN, fast with full network policy
+  multus: false                                  # Multus CNI enables attaching multiple network interfaces to pods
+  traefik: false                                 # Traefik ingress controller
+
+  # Service Mesh
+  istio: false                                   # Core Istio service mesh services
+  linkerd: false                                 # Linkerd is a service mesh for Kubernetes and other frameworks
+
+  # Logging
+  fluentd: false                                 # Elasticsearch-Fluentd-Kibana logging and monitoring
+
+  # Tracing and APM
+  jaeger: false                                  # Kubernetes Jaeger operator with its simple config
+
+  # Serverless and Functions
+  knative: false                                 # The Knative framework on Kubernetes
+  openfaas: false                                # OpenFaaS serverless framework
+
+  # Machine Learning
+  kubeflow: false                                # Kubeflow for easy ML deployments
+
+  # API Gateway
+  ambassador: false                              # Ambassador API Gateway and Ingress
+
+  # Storage
+  openebs: false                                 # OpenEBS storage
+  mayastor: false                                # Mayastor storage (NVMe-oF)
+
+  # Security and Runtime
+  kata: false                                    # A secure container runtime with lightweight virtual machines
+
+  # Hardware Acceleration
+  gpu: false                                     # Automatic enablement of Nvidia CUDA
+
+  # Autoscaling
+  keda: false                                    # Kubernetes Event-driven Autoscaling operator
+
+  # Management Tools
+  portainer: false                               # Container management dashboard
+
+  # Certificate Management
+  cert-manager: false                            # Cert-manager for automated certificate management
+
+  # Backup and DR
+  # Note: Velero is typically installed via Helm, not as a MicroK8s addon
+
+# Helm repositories to add (if helm3 is enabled)
+microk8s_helm_repositories:
+  - name: stable
+    url: https://charts.helm.sh/stable
+  - name: bitnami
+    url: https://charts.bitnami.com/bitnami
+
+# Run addon management only on designated master node
+microk8s_addons_run_on_master_only: true

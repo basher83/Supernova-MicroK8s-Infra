@@ -1,17 +1,153 @@
 #SPDX-License-Identifier: MIT-0
-- name: Install MicroK8s
-  # tasks file for microk8s_install
+---
+# tasks file for microk8s_install
 
-  shell: sudo snap install microk8s --classic
-  args:
-    executable: /bin/bash
+- name: Ensure snapd is installed
+  become: true
+  ansible.builtin.package:
+    name: snapd
+    state: present
+  when: ansible_distribution != 'Archlinux'
+
+- name: Ensure snapd is installed (Arch Linux)
+  become: true
+  community.general.pacman:
+    name: snapd
+    state: present
+  when: ansible_distribution == 'Archlinux'
+
+- name: Check if system is Raspberry Pi
+  ansible.builtin.command: uname -r
+  register: uname_output
+  changed_when: false
+
+- name: Install Raspberry Pi specific packages
+  become: true
+  ansible.builtin.package:
+    name: linux-modules-extra-raspi
+    state: present
+  when:
+    - microk8s_install_raspi_packages | bool
+    - "'raspi' in uname_output.stdout"
+    - ansible_distribution == "Ubuntu"
+    - ansible_distribution_version is version('24.04', '<')
+  ignore_errors: true  # Package may not exist on all Ubuntu versions
+
+- name: Install MicroK8s
+  become: true
+  community.general.snap:
+    name: microk8s
+    classic: true
+    channel: "{{ microk8s_version }}"
   register: microk8s_install_result
-  changed_when: "'already installed' not in microk8s_install_result.stdout"
-- name: Add ansible to MicroK8s group
-  shell: |
-    sudo usermod -a -G microk8s ansible
-    sudo mkdir -p /home/ansible/.kube
-    sudo chown -R ansible:ansible /home/ansible/.kube
-  args:
-    executable: /bin/bash
-  changed_when: false # This is idempotent but we can't easily check
+
+- name: Wait for MicroK8s to be ready
+  become: true
+  ansible.builtin.command: "{{ microk8s_bin_path }}microk8s status --wait-ready"
+  register: microk8s_status_output
+  changed_when: false
+  failed_when:
+    - "'This MicroK8s deployment is acting as a node in a cluster.' not in microk8s_status_output.stdout_lines"
+    - microk8s_status_output.rc > 0
+
+- name: Create kubectl alias
+  become: true
+  ansible.builtin.command: "snap alias microk8s.kubectl kubectl"
+  register: kubectl_alias_result
+  changed_when: "'already' not in kubectl_alias_result.stderr"
+  failed_when:
+    - kubectl_alias_result.rc > 0
+    - "'already' not in kubectl_alias_result.stderr"
+  when: microk8s_create_kubectl_alias | bool
+
+- name: Create helm3 alias
+  become: true
+  ansible.builtin.command: "snap alias microk8s.helm3 helm"
+  register: helm_alias_result
+  changed_when: "'already' not in helm_alias_result.stderr"
+  failed_when:
+    - helm_alias_result.rc > 0
+    - "'already' not in helm_alias_result.stderr"
+  when: microk8s_create_helm_alias | bool
+
+- name: Create custom CSR template for certificates
+  become: true
+  ansible.builtin.template:
+    src: "{{ microk8s_csr_template }}"
+    dest: /var/snap/microk8s/current/certs/csr.conf.template
+    mode: '0644'
+  when:
+    - microk8s_csr_template is defined
+    - microk8s_csr_template is file
+  notify: Refresh MicroK8s certificates
+
+- name: Create directory for MicroK8s CA certificates
+  become: true
+  ansible.builtin.file:
+    path: /usr/share/ca-certificates/extra
+    state: directory
+    mode: '0755'
+  when: microk8s_trust_ca_certificates | bool
+
+- name: Find MicroK8s CA certificates
+  become: true
+  ansible.builtin.find:
+    paths: /var/snap/microk8s/current/certs
+    patterns: '*ca*.crt'
+  register: microk8s_ca_certs
+  when: microk8s_trust_ca_certificates | bool
+
+- name: Copy MicroK8s CA certificates to system trust store
+  become: true
+  ansible.builtin.copy:
+    src: "{{ item.path }}"
+    dest: /usr/share/ca-certificates/extra/
+    remote_src: true
+    mode: '0644'
+  loop: "{{ microk8s_ca_certs.files }}"
+  when:
+    - microk8s_trust_ca_certificates | bool
+    - microk8s_ca_certs.files is defined
+  register: ca_cert_copy
+
+- name: Update CA certificates
+  become: true
+  ansible.builtin.command: update-ca-certificates
+  register: update_ca_result
+  changed_when: "'0 added, 0 removed' not in update_ca_result.stdout"
+  when:
+    - microk8s_trust_ca_certificates | bool
+    - ca_cert_copy is changed
+
+- name: Add users to microk8s group
+  become: true
+  ansible.builtin.user:
+    name: "{{ item }}"
+    groups: microk8s
+    append: true
+  loop: "{{ microk8s_users }}"
+  when:
+    - microk8s_users is defined
+    - microk8s_users | length > 0
+
+- name: Create .kube directory for users
+  become: true
+  ansible.builtin.file:
+    path: "/home/{{ item }}/.kube"
+    state: directory
+    owner: "{{ item }}"
+    group: "{{ item }}"
+    mode: '0755'
+  loop: "{{ microk8s_users }}"
+  when:
+    - microk8s_users is defined
+    - microk8s_users | length > 0
+
+- name: Disable snap autoupdate
+  become: true
+  ansible.builtin.blockinfile:
+    path: /etc/hosts
+    marker: "# {mark} ANSIBLE MANAGED: MicroK8s - Disable snap autoupdate"
+    block: |
+      127.0.0.1 api.snapcraft.io
+  when: microk8s_disable_snap_autoupdate | bool

@@ -1,4 +1,12 @@
 #SPDX-License-Identifier: MIT-0
-
-
+---
 # handlers file for microk8s_install
+
+- name: Refresh MicroK8s certificates
+  become: true
+  ansible.builtin.command: "{{ microk8s_bin_path }}microk8s refresh-certs --cert {{ item }}"
+  loop:
+    - server.crt
+    - front-proxy-client.crt
+    - ca.crt
+  listen: "Refresh MicroK8s certificates"

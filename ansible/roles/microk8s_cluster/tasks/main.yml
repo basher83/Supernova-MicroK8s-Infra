@@ -1,4 +1,163 @@
 #SPDX-License-Identifier: MIT-0
-
-
+---
 # tasks file for microk8s_cluster
+
+- name: Add /etc/hosts entries for all HA cluster members
+  become: true
+  ansible.builtin.blockinfile:
+    path: /etc/hosts
+    marker: "# {mark} ANSIBLE MANAGED: MicroK8s HA Cluster Hosts"
+    block: |
+      {% for host in groups[microk8s_group_ha] %}
+      {{ hostvars[host].ansible_default_ipv4.address }} {{ hostvars[host].ansible_hostname }}
+      {% endfor %}
+  when:
+    - microk8s_enable_ha | bool
+    - microk8s_add_hosts_entries | bool
+    - groups[microk8s_group_ha] is defined
+
+- name: Add /etc/hosts entries for worker nodes
+  become: true
+  ansible.builtin.blockinfile:
+    path: /etc/hosts
+    marker: "# {mark} ANSIBLE MANAGED: MicroK8s Worker Cluster Hosts"
+    block: |
+      {% for host in groups[microk8s_group_workers] %}
+      {{ hostvars[host].ansible_default_ipv4.address }} {{ hostvars[host].ansible_hostname }}
+      {% endfor %}
+  when:
+    - microk8s_enable_ha | bool
+    - microk8s_add_workers_to_hostfile | bool
+    - groups[microk8s_group_workers] is defined
+    - groups[microk8s_group_workers] | length > 0
+
+- name: Determine designated master node (first in sorted list)
+  ansible.builtin.set_fact:
+    microk8s_designated_master: "{{ (groups[microk8s_group_ha] | sort)[0] }}"
+  when: microk8s_enable_ha | bool
+
+- name: Display designated master
+  ansible.builtin.debug:
+    msg: "Designated master node: {{ microk8s_designated_master }}"
+  when: microk8s_enable_ha | bool
+
+# HA Cluster Formation Block
+- name: Form HA cluster
+  when:
+    - microk8s_enable_ha | bool
+    - inventory_hostname != microk8s_designated_master
+    - inventory_hostname in groups[microk8s_group_ha]
+  become: true
+  block:
+    - name: Wait for MicroK8s to be ready on designated master
+      ansible.builtin.command: "{{ microk8s_bin_path }}microk8s status --wait-ready"
+      delegate_to: "{{ microk8s_designated_master }}"
+      delegate_facts: true
+      changed_when: false
+      timeout: "{{ microk8s_join_timeout }}"
+
+    - name: Get join command from designated master
+      ansible.builtin.shell: >
+        set -o pipefail &&
+        {{ microk8s_bin_path }}microk8s add-node |
+        grep -E -m1 'microk8s join {{ microk8s_ip_regex_ha }}'
+      delegate_to: "{{ microk8s_designated_master }}"
+      delegate_facts: true
+      changed_when: false
+      register: microk8s_join_command
+      args:
+        executable: /bin/bash
+
+    - name: Get current cluster nodes
+      ansible.builtin.command: "{{ microk8s_bin_path }}microk8s kubectl get nodes"
+      delegate_to: "{{ microk8s_designated_master }}"
+      delegate_facts: true
+      changed_when: false
+      register: microk8s_cluster_nodes
+
+    - name: Wait for MicroK8s to be ready on this node
+      ansible.builtin.command: "{{ microk8s_bin_path }}microk8s status --wait-ready"
+      changed_when: false
+      timeout: "{{ microk8s_join_timeout }}"
+
+    - name: Join node to HA cluster
+      ansible.builtin.command: "{{ microk8s_join_command.stdout }}"
+      when: inventory_hostname not in microk8s_cluster_nodes.stdout
+      register: join_command_output
+      failed_when:
+        - join_command_output.rc > 0
+        - "'already known to dqlite' not in join_command_output.stdout"
+
+    - name: Wait after join for cluster stabilization
+      ansible.builtin.pause:
+        seconds: "{{ microk8s_join_delay }}"
+      when: join_command_output is changed
+
+# Worker Node Formation Block
+- name: Form worker cluster
+  when:
+    - microk8s_enable_ha | bool
+    - groups[microk8s_group_workers] is defined
+    - groups[microk8s_group_workers] | length > 0
+    - inventory_hostname in groups[microk8s_group_workers]
+  become: true
+  block:
+    - name: Get worker join command from designated master
+      ansible.builtin.shell: >
+        set -o pipefail &&
+        {{ microk8s_bin_path }}microk8s add-node |
+        grep -E -m1 'microk8s join {{ microk8s_ip_regex_ha }}'
+      delegate_to: "{{ microk8s_designated_master }}"
+      delegate_facts: true
+      changed_when: false
+      register: microk8s_worker_join_command
+      args:
+        executable: /bin/bash
+
+    - name: Get current cluster nodes for worker check
+      ansible.builtin.command: "{{ microk8s_bin_path }}microk8s kubectl get nodes"
+      delegate_to: "{{ microk8s_designated_master }}"
+      delegate_facts: true
+      changed_when: false
+      register: microk8s_cluster_nodes_worker
+
+    - name: Wait for MicroK8s to be ready on worker node
+      ansible.builtin.command: "{{ microk8s_bin_path }}microk8s status --wait-ready"
+      changed_when: false
+      timeout: "{{ microk8s_join_timeout }}"
+
+    - name: Join worker node to cluster
+      ansible.builtin.command: "{{ microk8s_worker_join_command.stdout }} --worker"
+      when: inventory_hostname not in microk8s_cluster_nodes_worker.stdout
+      register: worker_join_output
+      failed_when:
+        - worker_join_output.rc > 0
+        - "'already known to dqlite' not in worker_join_output.stdout"
+
+    - name: Wait after worker join for cluster stabilization
+      ansible.builtin.pause:
+        seconds: "{{ microk8s_join_delay }}"
+      when: worker_join_output is changed
+
+# Cluster Validation
+- name: Validate cluster formation
+  when:
+    - microk8s_enable_ha | bool
+    - inventory_hostname == microk8s_designated_master
+  become: true
+  block:
+    - name: Get final cluster status
+      ansible.builtin.command: "{{ microk8s_bin_path }}microk8s kubectl get nodes"
+      changed_when: false
+      register: final_cluster_status
+
+    - name: Display cluster status
+      ansible.builtin.debug:
+        msg: "{{ final_cluster_status.stdout_lines }}"
+
+    - name: Check all nodes are Ready
+      ansible.builtin.assert:
+        that:
+          - "'NotReady' not in final_cluster_status.stdout"
+        fail_msg: "Some nodes are not Ready in the cluster"
+        success_msg: "All cluster nodes are Ready"
