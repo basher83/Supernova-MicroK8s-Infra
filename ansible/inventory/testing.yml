@@ -1,12 +1,12 @@
 all:
   children:
-    jumpbox_vm_test:
+    jumpbox_vm:
       hosts:
-        jumpbox-test:
-    microk8s_nodes_test:
+        jumpbox:
+    microk8s_nodes:
       children:
-        microk8s_test:
+        microk8s:
           hosts:
-            microk8s-1-test:
-            microk8s-2-test:
-            microk8s-3-test:
+            microk8s-1:
+            microk8s-2:
+            microk8s-3:
