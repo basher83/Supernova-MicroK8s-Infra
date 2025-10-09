@@ -8,6 +8,7 @@
 - **[setup-guide.md](setup-guide.md)** - MicroK8s installation and core addon configuration
 - **[developer-tools.md](developer-tools.md)** - Development tools and automation setup
 - **[inspiration.md](inspiration.md)** - Alternative approaches and project comparisons
+- **[iac-implementation-plan.md](iac-implementation-plan.md)** - Infrastructure as Code implementation strategy
 
 ### 🛠️ Standards & Best Practices
 
@@ -20,9 +21,9 @@
 
 ### 📁 Subdirectories
 
-- **[terraform/](terraform/)** - Terraform configuration and user guides
-- **[research/](research/)** - Technical research and comparisons
-- **[troubleshooting/](troubleshooting/)** - Common issues and solutions
+- **[terraform/](terraform/)** - Terraform guides (provisioning, outputs, variables)
+- **[research/](research/)** - Technical research (BIOS selection, provider comparisons)
+- **[troubleshooting/](troubleshooting/)** - Issue resolution (modules, networking, API delegation)
 
 ## Archived Documentation
 
@@ -30,14 +31,15 @@
 
 ## Quick Reference
 
-| Document              | Purpose                | Status    |
-| --------------------- | ---------------------- | --------- |
-| learning-roadmap.md   | Learning progression   | ✅ Active |
-| setup-guide.md        | Technical setup        | ✅ Active |
-| developer-tools.md    | Dev tools setup        | ✅ Active |
-| inspiration.md        | Alternative approaches | ✅ Active |
-| ansible-standards.md  | Best practices         | ✅ Active |
-| ansible-adhoc-cmds.md | Command reference      | ✅ Active |
-| proxmox-qm-cmd.md     | VM templates           | ✅ Active |
+| Document                   | Purpose                | Status    |
+| -------------------------- | ---------------------- | --------- |
+| learning-roadmap.md        | Learning progression   | ✅ Active |
+| setup-guide.md             | Technical setup        | ✅ Active |
+| developer-tools.md         | Dev tools setup        | ✅ Active |
+| inspiration.md             | Alternative approaches | ✅ Active |
+| iac-implementation-plan.md | IaC strategy           | ✅ Active |
+| ansible-standards.md       | Best practices         | ✅ Active |
+| ansible-adhoc-cmds.md      | Command reference      | ✅ Active |
+| proxmox-qm-cmd.md          | VM templates           | ✅ Active |
 
 See [../README.md](../README.md) for project overview.
