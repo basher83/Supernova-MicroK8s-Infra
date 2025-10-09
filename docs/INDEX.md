@@ -19,11 +19,18 @@
 - **[ansible-adhoc-cmds.md](ansible-adhoc-cmds.md)** - Quick Ansible command reference
 - **[proxmox-qm-cmd.md](proxmox-qm-cmd.md)** - Proxmox VM template creation guide
 
+### 🐛 Troubleshooting
+
+- **[troubleshooting/ansible-playbook-issues.md](troubleshooting/ansible-playbook-issues.md)** - Playbook refactoring fixes (7 issues resolved)
+- **[troubleshooting/ansible-module-parameters.md](troubleshooting/ansible-module-parameters.md)** - Ansible module parameter issues
+- **[troubleshooting/networking-vlan.md](troubleshooting/networking-vlan.md)** - VLAN and network configuration
+- **[troubleshooting/proxmox-api-delegation.md](troubleshooting/proxmox-api-delegation.md)** - Proxmox API and delegation issues
+- **[troubleshooting/terraform-vm-modules.md](troubleshooting/terraform-vm-modules.md)** - Terraform VM module troubleshooting
+
 ### 📁 Subdirectories
 
 - **[terraform/](terraform/)** - Terraform guides (provisioning, outputs, variables)
 - **[research/](research/)** - Technical research (BIOS selection, provider comparisons)
-- **[troubleshooting/](troubleshooting/)** - Issue resolution (modules, networking, API delegation)
 
 ## Archived Documentation
 
