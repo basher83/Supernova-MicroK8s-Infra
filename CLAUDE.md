@@ -54,9 +54,9 @@ mise run ansible-install        # Install Ansible requirements
 mise run ansible-ping          # Test connectivity to all hosts
 
 # Run playbooks
-ansible-playbook playbooks/playbook.yml                    # Main deployment
-ansible-playbook --syntax-check playbooks/playbook.yml    # Syntax check
-ansible-playbook --check --diff playbooks/playbook.yml    # Dry run
+ansible-playbook playbooks/microk8s-deploy.yml                    # Main deployment
+ansible-playbook --syntax-check playbooks/microk8s-deploy.yml    # Syntax check
+ansible-playbook --check --diff playbooks/microk8s-deploy.yml    # Dry run
 ```
 
 ### Linting and Validation
@@ -154,8 +154,8 @@ ansible/
 ├── inventory/           # Dynamic (Proxmox) and static inventory files
 ├── group_vars/all.yml   # Global variables (network, hosts, services)
 ├── playbooks/
-│   ├── playbook.yml     # Main: MicroK8s + Rancher + ArgoCD deployment
-│   └── examples/        # Pattern demonstrations (Infisical integration)
+│   ├── microk8s-deploy.yml  # Main: MicroK8s + Rancher + ArgoCD deployment
+│   └── examples/            # Pattern demonstrations (Infisical integration)
 └── roles/               # Galaxy-standard roles (defaults/, handlers/, tasks/, etc.)
     ├── microk8s_install/
     ├── microk8s_cluster/
@@ -240,7 +240,7 @@ Standard deployment follows this sequence:
 1. **Create Proxmox VM Template** (PREP-001 in tasks/)
 2. **Configure Terraform** (`terraform.tfvars`)
 3. **Deploy VMs**: `cd terraform && mise run apply`
-4. **Configure Cluster**: `cd ansible && ansible-playbook playbooks/playbook.yml`
+4. **Configure Cluster**: `cd ansible && ansible-playbook playbooks/microk8s-deploy.yml`
 5. **Verify Deployment**: Check MicroK8s, Rancher, and ArgoCD
 
 See `tasks/INDEX.md` for detailed step-by-step guidance.
@@ -264,8 +264,8 @@ cd terraform
 terraform plan -var-file="testing.tfvars"
 
 # Ansible
-ansible-playbook --syntax-check playbooks/playbook.yml
-ansible-playbook --check --diff playbooks/playbook.yml
+ansible-playbook --syntax-check playbooks/microk8s-deploy.yml
+ansible-playbook --check --diff playbooks/microk8s-deploy.yml
 ansible-lint roles/
 
 # Pre-commit

@@ -1,0 +1,221 @@
+---
+# ==============================================================================
+# MicroK8s Cluster Deployment Playbook
+# ==============================================================================
+#
+# Purpose: Complete MicroK8s HA cluster deployment with Rancher and ArgoCD
+#
+# This playbook orchestrates:
+#   1. MicroK8s installation on all nodes
+#   2. High-availability cluster formation
+#   3. Core addons enablement
+#   4. Rancher deployment (cluster management)
+#   5. ArgoCD deployment (GitOps)
+#
+# Usage:
+#   # Production deployment
+#   ansible-playbook -i inventory/production.yml playbooks/microk8s-deploy.yml
+#
+#   # Testing deployment
+#   ansible-playbook -i inventory/testing.yml playbooks/microk8s-deploy.yml
+#
+#   # With tags (selective deployment)
+#   ansible-playbook -i inventory/production.yml playbooks/microk8s-deploy.yml --tags install
+#   ansible-playbook -i inventory/production.yml playbooks/microk8s-deploy.yml --tags cluster
+#   ansible-playbook -i inventory/production.yml playbooks/microk8s-deploy.yml --tags addons
+#   ansible-playbook -i inventory/production.yml playbooks/microk8s-deploy.yml --tags rancher
+#   ansible-playbook -i inventory/production.yml playbooks/microk8s-deploy.yml --tags argocd
+#
+# Requirements:
+#   - Ansible collections: community.general
+#   - Target hosts accessible via SSH
+#   - Sufficient privileges (become/sudo)
+#
+# ==============================================================================
+
+# ------------------------------------------------------------------------------
+# Phase 1: MicroK8s Installation
+# ------------------------------------------------------------------------------
+- name: Install MicroK8s on all cluster nodes
+  hosts: microk8s
+  become: true
+  gather_facts: true
+  tags: [install, microk8s]
+
+  roles:
+    - role: microk8s_install
+
+  post_tasks:
+    - name: Display installation summary
+      ansible.builtin.debug:
+        msg: |
+          MicroK8s installation completed on {{ inventory_hostname }}
+          - Version: {{ microk8s_version | default('latest') }}
+          - Users with kubectl access: {{ microk8s_users | join(', ') }}
+
+# ------------------------------------------------------------------------------
+# Phase 2: High-Availability Cluster Formation
+# ------------------------------------------------------------------------------
+- name: Form MicroK8s HA cluster
+  hosts: microk8s
+  become: true
+  gather_facts: true
+  tags: [cluster, microk8s]
+
+  roles:
+    - role: microk8s_cluster
+
+  post_tasks:
+    - name: Display cluster formation summary
+      ansible.builtin.debug:
+        msg: "MicroK8s HA cluster formation completed"
+      run_once: true
+
+# ------------------------------------------------------------------------------
+# Phase 3: Core Addons Enablement
+# ------------------------------------------------------------------------------
+- name: Enable MicroK8s addons
+  hosts: microk8s[0]  # Run on first node only (designated master)
+  become: true
+  gather_facts: false
+  tags: [addons, microk8s]
+
+  roles:
+    - role: microk8s-addons
+
+  post_tasks:
+    - name: Display addons summary
+      ansible.builtin.debug:
+        msg: |
+          MicroK8s addons configuration completed
+          - Enabled addons: {{ microk8s_plugins | dict2items | selectattr('value') | map(attribute='key') | list | join(', ') }}
+
+# ------------------------------------------------------------------------------
+# Phase 4: Rancher Deployment (Cluster Management)
+# ------------------------------------------------------------------------------
+- name: Deploy Rancher for cluster management
+  hosts: microk8s[0]  # Run on first node only (designated master)
+  become: true
+  gather_facts: false
+  tags: [rancher, management]
+
+  pre_tasks:
+    - name: Get current MicroK8s addon status
+      ansible.builtin.command:
+        cmd: "{{ microk8s_bin_path | default('') }}microk8s status --format yaml"
+      register: rancher_addon_check
+      changed_when: false
+
+    - name: Parse addon status
+      ansible.builtin.set_fact:
+        cluster_addons_status: "{{ rancher_addon_check.stdout | from_yaml }}"
+
+    - name: Check required addons for Rancher
+      ansible.builtin.assert:
+        that:
+          - cluster_addons_status.addons | selectattr('name', 'equalto', 'dns') | selectattr('status', 'equalto', 'enabled') | list | length > 0
+          - cluster_addons_status.addons | selectattr('name', 'equalto', 'ingress') | selectattr('status', 'equalto', 'enabled') | list | length > 0
+          - cluster_addons_status.addons | selectattr('name', 'equalto', 'helm3') | selectattr('status', 'equalto', 'enabled') | list | length > 0
+          - cluster_addons_status.addons | selectattr('name', 'equalto', 'cert-manager') | selectattr('status', 'equalto', 'enabled') | list | length > 0
+        fail_msg: "Rancher requires dns, ingress, helm3, and cert-manager addons to be enabled. Enable cert-manager in microk8s_plugins and run with --tags addons first."
+        success_msg: "All required addons for Rancher are enabled"
+
+  roles:
+    - role: rancher
+
+  post_tasks:
+    - name: Display Rancher deployment summary
+      ansible.builtin.debug:
+        msg: |
+          Rancher deployment completed
+          - Access: https://{{ rancher_hostname }}
+          - Namespace: {{ rancher_namespace }}
+
+# ------------------------------------------------------------------------------
+# Phase 5: ArgoCD Deployment (GitOps)
+# ------------------------------------------------------------------------------
+- name: Deploy ArgoCD for GitOps workflows
+  hosts: microk8s[0]  # Run on first node only (designated master)
+  become: true
+  gather_facts: false
+  tags: [argocd, gitops]
+
+  pre_tasks:
+    - name: Get current MicroK8s addon status
+      ansible.builtin.command:
+        cmd: "{{ microk8s_bin_path | default('') }}microk8s status --format yaml"
+      register: argocd_addon_check
+      changed_when: false
+
+    - name: Parse addon status
+      ansible.builtin.set_fact:
+        cluster_addons_status: "{{ argocd_addon_check.stdout | from_yaml }}"
+
+    - name: Check required addons for ArgoCD
+      ansible.builtin.assert:
+        that:
+          - cluster_addons_status.addons | selectattr('name', 'equalto', 'dns') | selectattr('status', 'equalto', 'enabled') | list | length > 0
+          - cluster_addons_status.addons | selectattr('name', 'equalto', 'helm3') | selectattr('status', 'equalto', 'enabled') | list | length > 0
+        fail_msg: "ArgoCD requires dns and helm3 addons to be enabled. Run with --tags addons first."
+        success_msg: "All required addons for ArgoCD are enabled"
+
+  roles:
+    - role: argocd
+
+  post_tasks:
+    - name: Display ArgoCD deployment summary
+      ansible.builtin.debug:
+        msg: |
+          ArgoCD deployment completed
+          - Access: http://{{ argocd_hostname }}
+          - Namespace: {{ argocd_namespace }}
+
+# ------------------------------------------------------------------------------
+# Final Summary
+# ------------------------------------------------------------------------------
+- name: Display deployment summary
+  hosts: microk8s[0]
+  become: true
+  gather_facts: false
+  tags: [always]
+
+  tasks:
+    - name: Get cluster status
+      ansible.builtin.command:
+        cmd: "{{ microk8s_bin_path | default('') }}microk8s kubectl get nodes -o wide"
+      register: cluster_nodes
+      changed_when: false
+
+    - name: Display final deployment summary
+      ansible.builtin.debug:
+        msg: |
+          ========================================
+          MicroK8s Cluster Deployment Complete!
+          ========================================
+
+          Cluster Nodes:
+          {{ cluster_nodes.stdout }}
+          {% if rancher_hostname is defined or argocd_hostname is defined %}
+
+          Services Deployed:
+          {% if rancher_hostname is defined %}
+          - Rancher (Cluster Management): https://{{ rancher_hostname }}
+          {% endif %}
+          {% if argocd_hostname is defined %}
+          - ArgoCD (GitOps): http://{{ argocd_hostname }}
+          {% endif %}
+
+          Next Steps:
+          {% if rancher_hostname is defined %}
+          1. Access Rancher at https://{{ rancher_hostname }}
+          {% endif %}
+          {% if argocd_hostname is defined %}
+          2. Access ArgoCD at http://{{ argocd_hostname }}
+          3. Configure GitOps repositories in ArgoCD
+          {% endif %}
+          {% if rancher_hostname is defined %}
+          4. Import cluster into Rancher for advanced management
+          {% endif %}
+          {% endif %}
+
+          ========================================

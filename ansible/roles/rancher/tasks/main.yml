@@ -1,4 +1,80 @@
 #SPDX-License-Identifier: MIT-0
-
-
+---
 # tasks file for rancher
+
+- name: Add Rancher Helm repository
+  become: true
+  ansible.builtin.command:
+    cmd: "{{ microk8s_bin_path }}microk8s helm3 repo add rancher-{{ rancher_chart_repo }} https://releases.rancher.com/server-charts/{{ rancher_chart_repo }}"
+  register: rancher_repo_add
+  changed_when: "'has been added' in rancher_repo_add.stdout"
+  failed_when:
+    - rancher_repo_add.rc > 0
+    - "'already exists' not in rancher_repo_add.stderr"
+
+- name: Update Helm repositories
+  become: true
+  ansible.builtin.command:
+    cmd: "{{ microk8s_bin_path }}microk8s helm3 repo update"
+  when: rancher_repo_add is changed
+  register: rancher_helm_update
+  changed_when: "'Update Complete' in rancher_helm_update.stdout"
+
+- name: Create namespace for Rancher
+  become: true
+  ansible.builtin.command:
+    cmd: "{{ microk8s_bin_path }}microk8s kubectl create namespace {{ rancher_namespace }}"
+  register: rancher_namespace_create
+  changed_when: rancher_namespace_create.rc == 0
+  failed_when:
+    - rancher_namespace_create.rc > 0
+    - "'already exists' not in rancher_namespace_create.stderr"
+
+- name: Check if Rancher is already installed
+  become: true
+  ansible.builtin.command:
+    cmd: "{{ microk8s_bin_path }}microk8s helm3 list -n {{ rancher_namespace }} -o json"
+  register: rancher_helm_list
+  changed_when: false
+
+- name: Parse Helm list output
+  ansible.builtin.set_fact:
+    rancher_installed: "{{ (rancher_helm_list.stdout | from_json) | selectattr('name', 'equalto', rancher_release_name) | list | length > 0 }}"
+
+- name: Install Rancher using Helm
+  become: true
+  ansible.builtin.command:
+    cmd: >
+      {{ microk8s_bin_path }}microk8s helm3 install {{ rancher_release_name }} rancher-{{ rancher_chart_repo }}/rancher
+      --namespace {{ rancher_namespace }}
+      --set hostname={{ rancher_hostname }}
+      --set replicas={{ rancher_replicas }}
+      --set bootstrapPassword={{ rancher_bootstrap_password }}
+      {{ '--set ingress.tls.source=' + rancher_tls_source if rancher_tls_source else '' }}
+  when: not rancher_installed
+  register: rancher_install
+  changed_when: rancher_install.rc == 0
+
+- name: Wait for Rancher deployment to be ready
+  become: true
+  ansible.builtin.command:
+    cmd: "{{ microk8s_bin_path }}microk8s kubectl rollout status deployment/rancher -n {{ rancher_namespace }} --timeout={{ rancher_rollout_timeout }}s"
+  register: rancher_rollout
+  changed_when: false
+  when: rancher_install is changed
+
+- name: Get Rancher service information
+  become: true
+  ansible.builtin.command:
+    cmd: "{{ microk8s_bin_path }}microk8s kubectl get svc -n {{ rancher_namespace }} -o json"
+  register: rancher_service_info
+  changed_when: false
+
+- name: Display Rancher access information
+  ansible.builtin.debug:
+    msg: |
+      Rancher has been deployed successfully!
+      - Access URL: https://{{ rancher_hostname }}
+      - Bootstrap Password: {{ rancher_bootstrap_password }}
+      - Namespace: {{ rancher_namespace }}
+  when: rancher_install is changed or rancher_installed

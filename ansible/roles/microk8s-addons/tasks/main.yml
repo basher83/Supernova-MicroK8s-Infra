@@ -29,10 +29,10 @@
   when:
     - item.status == 'disabled'
     - item.name in microk8s_plugins
-    - microk8s_plugins[item.name]
     - microk8s_plugins[item.name] is string
+    - microk8s_plugins[item.name] | length > 0
     - microk8s_plugins[item.name] != 'true'
-    - microk8s_plugins[item.name] | string != 'True'
+    - microk8s_plugins[item.name] != 'True'
   register: enable_addon_with_params
   changed_when: "'enabled' in enable_addon_with_params.stdout or 'Enabling' in enable_addon_with_params.stdout"
 
@@ -61,7 +61,8 @@
   when:
     - item.status == 'enabled'
     - item.name in microk8s_plugins
-    - not microk8s_plugins[item.name] | bool
+    - microk8s_plugins[item.name] is boolean
+    - not microk8s_plugins[item.name]
   register: disable_addon
   changed_when: "'disabled' in disable_addon.stdout or 'Disabling' in disable_addon.stdout"
 

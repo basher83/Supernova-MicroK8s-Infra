@@ -76,7 +76,7 @@ microk8s_plugins:
   portainer: false                               # Container management dashboard
 
   # Certificate Management
-  cert-manager: false                            # Cert-manager for automated certificate management
+  cert-manager: true                             # Cert-manager for automated certificate management (required for Rancher)
 
   # Backup and DR
   # Note: Velero is typically installed via Helm, not as a MicroK8s addon

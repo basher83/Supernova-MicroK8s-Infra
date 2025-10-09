@@ -26,8 +26,7 @@ ansible/
 │   ├── production.yml      # Production environment inventory (3-node cluster)
 │   └── proxmox.yml         # Proxmox dynamic inventory config
 ├── playbooks/              # Orchestration playbooks
-│   ├── playbook.yml        # Main: MicroK8s + Rancher + ArgoCD deployment
-│   ├── microk8s-initial-install.yml
+│   ├── microk8s-deploy.yml # Main: MicroK8s + Rancher + ArgoCD deployment
 │   ├── add-system-user.yml
 │   ├── proxmox-*.yml       # Proxmox infrastructure setup
 │   └── examples/           # Pattern demonstrations and working examples
@@ -63,7 +62,7 @@ ansible-galaxy collection install -r requirements.yml
 
 ```bash
 # Deploy 3-node HA cluster with MicroK8s, Rancher, and ArgoCD
-ansible-playbook playbooks/playbook.yml
+ansible-playbook playbooks/microk8s-deploy.yml
 ```
 
 **Inventory** (production.yml):
@@ -269,8 +268,7 @@ jumpbox_ip_home: "192.168.30.240"
 
 ### Main Playbooks
 
-- **`playbook.yml`**: Complete deployment (MicroK8s + Rancher + ArgoCD)
-- **`microk8s-initial-install.yml`**: MicroK8s installation only
+- **`microk8s-deploy.yml`**: Complete deployment (MicroK8s + Rancher + ArgoCD)
 - **`add-system-user.yml`**: User management
 - **`proxmox-build-template.yml`**: Create Proxmox VM templates
 - **`proxmox-create-terraform-user.yml`**: Setup Terraform user on Proxmox
@@ -321,13 +319,19 @@ vault_token: "{{ lookup('env', 'VAULT_TOKEN') | default(infisical_token) }}"
 
 ```bash
 # Install only
-ansible-playbook playbooks/playbook.yml --tags install
+ansible-playbook playbooks/microk8s-deploy.yml --tags install
 
-# Configure only
-ansible-playbook playbooks/playbook.yml --tags configure
+# Cluster formation only
+ansible-playbook playbooks/microk8s-deploy.yml --tags cluster
 
-# Validate only
-ansible-playbook playbooks/playbook.yml --tags validate
+# Addons only
+ansible-playbook playbooks/microk8s-deploy.yml --tags addons
+
+# Rancher only
+ansible-playbook playbooks/microk8s-deploy.yml --tags rancher
+
+# ArgoCD only
+ansible-playbook playbooks/microk8s-deploy.yml --tags argocd
 ```
 
 ---
@@ -338,7 +342,7 @@ ansible-playbook playbooks/playbook.yml --tags validate
 
 ```bash
 # Check main playbook
-ansible-playbook --syntax-check playbooks/playbook.yml
+ansible-playbook --syntax-check playbooks/microk8s-deploy.yml
 
 # Check all playbooks
 find playbooks -name "*.yml" -type f | xargs -I {} ansible-playbook --syntax-check {}
@@ -348,7 +352,7 @@ find playbooks -name "*.yml" -type f | xargs -I {} ansible-playbook --syntax-che
 
 ```bash
 # Dry run with diff
-ansible-playbook --check --diff playbooks/playbook.yml
+ansible-playbook --check --diff playbooks/microk8s-deploy.yml
 ```
 
 ### Linting
@@ -382,7 +386,7 @@ ansible-inventory --list
 ansible all -m ping
 
 # 3. Deploy cluster
-ansible-playbook playbooks/playbook.yml
+ansible-playbook playbooks/microk8s-deploy.yml
 
 # 4. Verify cluster
 microk8s kubectl get nodes
@@ -393,7 +397,7 @@ microk8s kubectl get nodes
 ```bash
 # 1. Update inventory (add microk8s_workers group)
 # 2. Re-run playbook (idempotent - only adds workers)
-ansible-playbook playbooks/playbook.yml
+ansible-playbook playbooks/microk8s-deploy.yml
 
 # 3. Verify workers joined
 microk8s kubectl get nodes
@@ -508,10 +512,10 @@ Some addons have dependencies (managed automatically):
 
 ```bash
 # Production
-ansible-playbook -i inventory/production.yml playbooks/playbook.yml
+ansible-playbook -i inventory/production.yml playbooks/microk8s-deploy.yml
 
 # Staging (if you have it)
-ansible-playbook -i inventory/staging.yml playbooks/playbook.yml
+ansible-playbook -i inventory/staging.yml playbooks/microk8s-deploy.yml
 ```
 
 ---

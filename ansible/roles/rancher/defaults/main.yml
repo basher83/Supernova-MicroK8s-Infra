@@ -1,4 +1,32 @@
 #SPDX-License-Identifier: MIT-0
-
-
+---
 # defaults file for rancher
+
+# Rancher Helm chart repository (latest, stable, alpha)
+rancher_chart_repo: "latest"
+
+# Rancher Helm release name
+rancher_release_name: "rancher"
+
+# Kubernetes namespace for Rancher
+rancher_namespace: "cattle-system"
+
+# Rancher hostname (must be DNS resolvable or in /etc/hosts)
+# Can be overridden in group_vars or playbook vars
+rancher_hostname: "rancher.local"
+
+# Number of Rancher replicas (1 for single-node, 3 for HA)
+rancher_replicas: 1
+
+# Bootstrap password for initial Rancher admin user
+rancher_bootstrap_password: "admin"
+
+# TLS source for Rancher ingress (rancher, letsEncrypt, secret)
+# Leave empty for default self-signed certificates
+rancher_tls_source: ""
+
+# Rollout timeout in seconds
+rancher_rollout_timeout: 600
+
+# When /snap/bin is not in the PATH
+microk8s_bin_path: ""

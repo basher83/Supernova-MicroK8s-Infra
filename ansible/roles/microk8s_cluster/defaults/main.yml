@@ -11,7 +11,8 @@ microk8s_group_ha: "microk8s"
 
 # Regex to select IP address for joining nodes in HA setup
 # Used to filter the correct join URL in multi-NIC environments
-microk8s_ip_regex_ha: "([0-9]{1,3}[\\.])3}[0-9]{1,3}"
+# Matches IPv4 addresses like 192.168.1.1
+microk8s_ip_regex_ha: "([0-9]{1,3}\\.){3}[0-9]{1,3}"
 
 # Hostgroup whose members will act as worker nodes only
 # Workers do not run control-plane components
