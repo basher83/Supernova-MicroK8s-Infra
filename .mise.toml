@@ -42,12 +42,12 @@ run = "ansible-galaxy collection install -r requirements.yml"
 [tasks.ansible-install]
 description = "Install Ansible requirements"
 dir = "ansible"
-run = "ansible-galaxy install --force --role-file requirements.yml"
+run = "ansible-galaxy collection install -r requirements.yml --force"
 
 [tasks.ansible-ping]
 description = "Test Ansible connectivity to all hosts"
 dir = "ansible"
-run = "ansible all -m ping -i inventory/all.yml"
+run = "ansible all -m ansible.builtin.ping"
 
 [tasks.pip-upgrade]
 description = "Upgrade Python requirements"
@@ -109,7 +109,7 @@ run = "yamlfmt ."
 [tasks.fmt-check]
 description = "Check formatting recursively (non-mutating, CI-friendly)"
 dir = "terraform"
-run = "terraform fmt -recursive -check -diff"
+run = "tofu fmt -recursive -check -diff"
 
 [tasks.fmt-all]
 description = "Format all files (Terraform and YAML)"
@@ -119,7 +119,7 @@ depends = ["fmt", "yaml-fmt"]
 [tasks.prod-validate]
 description = "Validate Terraform configuration"
 dir = "terraform"
-run = "terraform init -backend=false -input=false >/dev/null && terraform validate"
+run = "tofu init -backend=false -input=false >/dev/null && tofu validate"
 
 [tasks.docs]
 description = "Generate Terraform documentation for all modules and environments"
@@ -171,11 +171,11 @@ run = "ansible-lint ansible/"
 [tasks.lint-all]
 description = "Run all linting tasks"
 depends = [
-  "shellcheck",
-  "yaml-lint",
-  "markdown-lint",
-  "lint-prod",
-  "ansible-lint",
+    "shellcheck",
+    "yaml-lint",
+    "markdown-lint",
+    "lint-prod",
+    "ansible-lint",
 ]
 
 [tasks.validate-all]
@@ -185,30 +185,14 @@ depends = ["prod-validate"]
 [tasks.full-check]
 description = "Complete validation including formatting, linting, docs, and security"
 depends = [
-  "fmt-all",
-  "validate-all",
-  "lint-all",
-  "docs-check",
-  "infisical-scan",
+    "fmt-all",
+    "validate-all",
+    "lint-all",
+    "docs-check",
+    "infisical-scan",
 ]
 env = { TF_IN_AUTOMATION = "true", TF_INPUT = "false" }
 
 [tasks.setup]
 description = "Initial project setup - install hooks and generate docs"
 depends = ["hooks-install", "docs"]
-
-# Terraform convenience tasks
-[tasks.plan]
-description = "Run terraform plan"
-dir = "terraform"
-run = "terraform plan"
-
-[tasks.apply]
-description = "Run terraform apply"
-dir = "terraform"
-run = "terraform apply"
-
-[tasks.destroy]
-description = "Run terraform destroy"
-dir = "terraform"
-run = "terraform destroy"
