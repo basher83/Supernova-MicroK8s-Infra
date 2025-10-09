@@ -12,11 +12,11 @@
     system_username: "terraform"
     system_user_shell: "/bin/bash"
     system_user_comment: "Terraform automation user"
-    
+
     # SSH authorized_keys file configuration
     # Path to the authorized_keys file on the Ansible controller
     authorized_keys_file: "{{ playbook_dir }}/../files/terraform_authorized_keys"
-    
+
     # Sudoers configuration
     sudoers_commands:
       - "/sbin/pvesm"
@@ -138,6 +138,6 @@
           SSH Keys File: {{ 'Configured' if ssh_key_result.changed is defined else 'Not configured' }}
           Sudoers File: /etc/sudoers.d/{{ system_username }}
           Passwordless Sudo: {{ 'Working ✓' if sudo_command_test.rc == 0 else 'Check logs ✗' }}
-          
+
           Test SSH connection from your machine:
           ssh {{ system_username }}@{{ ansible_host | default(inventory_hostname) }} sudo pvesm apiinfo

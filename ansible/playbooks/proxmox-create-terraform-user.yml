@@ -16,6 +16,11 @@
   become: true
 
   vars:
+    # Infisical configuration
+    infisical_project_id: '7b832220-24c0-45bc-a5f1-ce9794a31259'
+    infisical_env: 'prod'
+    infisical_path: '/doggos-cluster'
+
     system_username: "terraform"
     system_user_shell: "/bin/bash"
     system_user_comment: "Terraform automation user (PAM realm)"
@@ -35,13 +40,28 @@
 
     # Proxmox API connection details for administrative tasks
     # Required for community.proxmox modules to authenticate
-    proxmox_api_host: "{{ ansible_host | default(inventory_hostname) }}"
-    proxmox_api_user: "root@pam"
-    # Use environment variable for password (export PROXMOX_PASSWORD='your-password')
-    # Or set directly: proxmox_api_password: "your-password" (not recommended)
-    proxmox_api_password: "{{ lookup('env', 'PROXMOX_PASSWORD') }}"
+    # Use gathered facts to get the actual IP (works with delegation to localhost)
+    proxmox_api_host: "{{ hostvars[inventory_hostname]['ansible_default_ipv4']['address'] }}"
+    # Secrets retrieved from Infisical in pre_tasks
+    proxmox_api_user: "{{ proxmox_username }}"
+    proxmox_api_password: "{{ proxmox_password }}"
     # Disable cert validation (set to true in production with valid certs)
     proxmox_validate_certs: false
+
+  pre_tasks:
+    - name: Retrieve Proxmox username from Infisical
+      ansible.builtin.include_tasks: "{{ playbook_dir }}/../tasks/infisical-secret-lookup.yml"
+      vars:
+        secret_name: 'PROXMOX_USERNAME'
+        secret_var_name: 'proxmox_username'
+        fallback_env_var: 'PROXMOX_USERNAME'
+
+    - name: Retrieve Proxmox password from Infisical
+      ansible.builtin.include_tasks: "{{ playbook_dir }}/../tasks/infisical-secret-lookup.yml"
+      vars:
+        secret_name: 'PROXMOX_PASSWORD'
+        secret_var_name: 'proxmox_password'
+        fallback_env_var: 'PROXMOX_PASSWORD'
 
   tasks:
     - name: Check if terraform@pve user exists
@@ -168,10 +188,9 @@
     - name: Configure ACL permissions for terraform-users group
       community.proxmox.proxmox_access_acl:
         path: /
-        roles:
-          - "{{ proxmox_role_name }}"
-        groups:
-          - "{{ proxmox_group_name }}"
+        type: group
+        ugid: "{{ proxmox_group_name }}"
+        roleid: "{{ proxmox_role_name }}"
         state: present
         api_host: "{{ proxmox_api_host }}"
         api_user: "{{ proxmox_api_user }}"
@@ -185,25 +204,23 @@
       ansible.builtin.debug:
         msg: "ACL permissions {{ 'configured' if acl_result.changed else 'already set' }}"
 
-    - name: Create terraform@pam user in Proxmox
-      community.proxmox.proxmox_user:
-        name: "{{ system_username }}"
-        realm: "{{ proxmox_user_realm }}"
-        groups:
-          - "{{ proxmox_group_name }}"
-        state: present
-        comment: "{{ system_user_comment }}"
-        api_host: "{{ proxmox_api_host }}"
-        api_user: "{{ proxmox_api_user }}"
-        api_password: "{{ proxmox_api_password }}"
-        validate_certs: "{{ proxmox_validate_certs }}"
-      delegate_to: localhost
-      become: false
+    - name: Check if terraform@pam user exists in Proxmox
+      ansible.builtin.command: pveum user list
+      register: proxmox_users
+      changed_when: false
+      failed_when: false
+
+    - name: Create terraform@pam user in Proxmox (using pveum due to API limitation)
+      ansible.builtin.command: >
+        pveum user add {{ system_username }}@{{ proxmox_user_realm }}
+        --groups {{ proxmox_group_name }}
+        --comment "{{ system_user_comment }}"
+      when: "system_username + '@' + proxmox_user_realm not in proxmox_users.stdout"
       register: pam_user_result
 
     - name: Display PAM user creation status
       ansible.builtin.debug:
-        msg: "{{ system_username }}@{{ proxmox_user_realm }} user {{ 'created' if pam_user_result.changed else 'already exists' }}"
+        msg: "{{ system_username }}@{{ proxmox_user_realm }} user {{ 'created' if pam_user_result.changed | default(false) else 'already exists' }}"
 
     - name: Check if API token exists
       ansible.builtin.command: pveum user token list {{ system_username }}@{{ proxmox_user_realm }}
