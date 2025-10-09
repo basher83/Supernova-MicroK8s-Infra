@@ -1,8 +1,0 @@
-{
-    "files.associations": {
-        "**/defaults/**/*.yml": "ansible",
-        "**/handlers/**/*.yml": "ansible",
-        "**/tasks/**/*.yml": "ansible",
-        "**/vars/**/*.yml": "ansible"
-    }
-}
