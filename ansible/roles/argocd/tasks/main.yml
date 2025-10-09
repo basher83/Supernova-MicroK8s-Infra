@@ -1,4 +1,204 @@
 #SPDX-License-Identifier: MIT-0
-
-
+---
 # tasks file for argocd
+
+- name: Add Argo Helm repository
+  become: true
+  ansible.builtin.command:
+    cmd: "{{ microk8s_bin_path }}microk8s helm3 repo add argo https://argoproj.github.io/argo-helm"
+  register: argo_repo_add
+  changed_when: "'has been added' in argo_repo_add.stdout"
+  failed_when:
+    - argo_repo_add.rc > 0
+    - "'already exists' not in argo_repo_add.stderr"
+
+- name: Update Helm repositories
+  become: true
+  ansible.builtin.command:
+    cmd: "{{ microk8s_bin_path }}microk8s helm3 repo update"
+  when: argo_repo_add is changed
+  register: argo_helm_update
+  changed_when: "'Update Complete' in argo_helm_update.stdout"
+
+- name: Create namespace for ArgoCD
+  become: true
+  ansible.builtin.command:
+    cmd: "{{ microk8s_bin_path }}microk8s kubectl create namespace {{ argocd_namespace }}"
+  register: argocd_namespace_create
+  changed_when: argocd_namespace_create.rc == 0
+  failed_when:
+    - argocd_namespace_create.rc > 0
+    - "'already exists' not in argocd_namespace_create.stderr"
+
+- name: Check if ArgoCD is already installed
+  become: true
+  ansible.builtin.command:
+    cmd: "{{ microk8s_bin_path }}microk8s helm3 list -n {{ argocd_namespace }} -o json"
+  register: argocd_helm_list
+  changed_when: false
+
+- name: Parse Helm list output
+  ansible.builtin.set_fact:
+    argocd_installed: "{{ (argocd_helm_list.stdout | from_json) | selectattr('name', 'equalto', argocd_release_name) | list | length > 0 }}"
+
+- name: Get current ArgoCD ingress configuration
+  become: true
+  ansible.builtin.command:
+    cmd: "{{ microk8s_bin_path }}microk8s kubectl get ingress -n {{ argocd_namespace }} {{ argocd_release_name }}-server -o jsonpath='{.spec.rules[0].host}'"
+  register: argocd_current_hostname
+  changed_when: false
+  failed_when: false
+  when: argocd_installed
+
+- name: Get current ArgoCD ingress backend port
+  become: true
+  ansible.builtin.command:
+    cmd: "{{ microk8s_bin_path }}microk8s kubectl get ingress -n {{ argocd_namespace }} {{ argocd_release_name }}-server -o jsonpath='{.spec.rules[0].http.paths[0].backend.service.port.number}'"
+  register: argocd_current_backend_port
+  changed_when: false
+  failed_when: false
+  when: argocd_installed
+
+- name: Get current ArgoCD server insecure setting
+  become: true
+  ansible.builtin.command:
+    cmd: "{{ microk8s_bin_path }}microk8s kubectl get configmap argocd-cmd-params-cm -n {{ argocd_namespace }} -o jsonpath='{.data.server\\.insecure}'"
+  register: argocd_current_insecure
+  changed_when: false
+  failed_when: false
+  when: argocd_installed
+
+- name: Get current ArgoCD service type
+  become: true
+  ansible.builtin.command:
+    cmd: "{{ microk8s_bin_path }}microk8s kubectl get svc {{ argocd_release_name }}-server -n {{ argocd_namespace }} -o jsonpath='{.spec.type}'"
+  register: argocd_current_service_type
+  changed_when: false
+  failed_when: false
+  when: argocd_installed
+
+- name: Determine if ArgoCD needs upgrade
+  ansible.builtin.set_fact:
+    argocd_needs_upgrade: >-
+      {{
+        argocd_installed and (
+          (argocd_ingress_enabled and (argocd_current_hostname.stdout | default('') != argocd_hostname)) or
+          (argocd_ingress_enabled and (argocd_current_insecure.stdout | default('') != 'true')) or
+          (argocd_current_service_type.stdout | default('') != argocd_service_type)
+        )
+      }}
+
+- name: Build ArgoCD Helm install/upgrade command
+  ansible.builtin.set_fact:
+    argocd_helm_cmd: >
+      {{ microk8s_bin_path }}microk8s helm3 {{ 'upgrade' if argocd_needs_upgrade else 'install' }} {{ argocd_release_name }} argo/argo-cd
+      --namespace {{ argocd_namespace }}
+      --set server.service.type={{ argocd_service_type }}
+      {{ '--set server.ingress.enabled=' + (argocd_ingress_enabled | string) }}
+      {{ '--set server.ingress.ingressClassName=public' if argocd_ingress_enabled else '' }}
+      {{ '--set server.ingress.hosts[0]=' + argocd_hostname if argocd_ingress_enabled else '' }}
+      {{ '--set server.ingress.annotations."nginx\.ingress\.kubernetes\.io/backend-protocol"=HTTP' if argocd_ingress_enabled and not argocd_ingress_ssl_passthrough else '' }}
+      {{ '--set server.ingress.annotations."nginx\.ingress\.kubernetes\.io/ssl-passthrough"=false' if argocd_ingress_enabled and not argocd_ingress_ssl_passthrough else '' }}
+      {{ '--set server.ingress.annotations."nginx\.ingress\.kubernetes\.io/force-ssl-redirect"=false' if argocd_ingress_enabled and not argocd_ingress_ssl_passthrough else '' }}
+
+- name: Install or upgrade ArgoCD using Helm
+  become: true
+  ansible.builtin.command:
+    cmd: "{{ argocd_helm_cmd }}"
+  when: not argocd_installed or argocd_needs_upgrade
+  register: argocd_install
+  changed_when: argocd_install.rc == 0
+
+- name: Configure ArgoCD server insecure mode (required for HTTP ingress)
+  become: true
+  ansible.builtin.command:
+    cmd: >
+      {{ microk8s_bin_path }}microk8s kubectl patch configmap argocd-cmd-params-cm -n {{ argocd_namespace }}
+      --type='json'
+      -p='[{"op":"add","path":"/data/server.insecure","value":"true"}]'
+  when: argocd_ingress_enabled and not argocd_ingress_ssl_passthrough and (argocd_current_insecure.stdout | default('') != 'true')
+  register: argocd_insecure_config
+  changed_when: argocd_insecure_config.rc == 0
+  failed_when: false
+
+- name: Restart ArgoCD server to apply insecure mode
+  become: true
+  ansible.builtin.command:
+    cmd: "{{ microk8s_bin_path }}microk8s kubectl rollout restart deployment {{ argocd_release_name }}-server -n {{ argocd_namespace }}"
+  when: argocd_insecure_config is changed
+  register: argocd_server_restart
+  changed_when: argocd_server_restart.rc == 0
+
+- name: Patch ingress hostname and annotations if needed (Helm upgrade doesn't always update ingress)
+  become: true
+  ansible.builtin.command:
+    cmd: >
+      {{ microk8s_bin_path }}microk8s kubectl patch ingress {{ argocd_release_name }}-server -n {{ argocd_namespace }}
+      --type='json'
+      -p='[
+        {"op": "replace", "path": "/spec/rules/0/host", "value":"{{ argocd_hostname }}"},
+        {"op": "replace", "path": "/spec/rules/0/http/paths/0/backend/service/port/number", "value":80}
+      ]'
+  when: >
+    argocd_ingress_enabled and not argocd_ingress_ssl_passthrough and (
+      (argocd_current_hostname.stdout | default('') != argocd_hostname) or
+      (argocd_current_backend_port.stdout | default('') != '80')
+    )
+  register: argocd_ingress_patch
+  changed_when: argocd_ingress_patch.rc == 0
+  failed_when: false
+
+- name: Ensure ingress annotations are set correctly for HTTP backend
+  become: true
+  ansible.builtin.command:
+    cmd: >
+      {{ microk8s_bin_path }}microk8s kubectl annotate ingress {{ argocd_release_name }}-server -n {{ argocd_namespace }}
+      nginx.ingress.kubernetes.io/backend-protocol=HTTP
+      nginx.ingress.kubernetes.io/ssl-passthrough=false
+      nginx.ingress.kubernetes.io/force-ssl-redirect=false
+      --overwrite
+  when: argocd_ingress_enabled and not argocd_ingress_ssl_passthrough
+  register: argocd_ingress_annotations
+  changed_when: argocd_ingress_annotations.rc == 0
+  failed_when: false
+
+- name: Wait for ArgoCD server deployment to be ready
+  become: true
+  ansible.builtin.command:
+    cmd: "{{ microk8s_bin_path }}microk8s kubectl rollout status deployment/{{ argocd_release_name }}-server -n {{ argocd_namespace }} --timeout={{ argocd_rollout_timeout }}s"
+  register: argocd_rollout
+  changed_when: false
+  when: argocd_install is changed or argocd_server_restart is changed or argocd_ingress_patch is changed
+
+- name: Get ArgoCD initial admin password
+  become: true
+  ansible.builtin.command:
+    cmd: "{{ microk8s_bin_path }}microk8s kubectl get secret argocd-initial-admin-secret -n {{ argocd_namespace }} -o jsonpath='{.data.password}'"
+  register: argocd_admin_password_encoded
+  changed_when: false
+  failed_when: false
+
+- name: Decode ArgoCD admin password
+  ansible.builtin.set_fact:
+    argocd_admin_password: "{{ argocd_admin_password_encoded.stdout | b64decode }}"
+  when: argocd_admin_password_encoded.rc == 0
+
+- name: Get ArgoCD service information
+  become: true
+  ansible.builtin.command:
+    cmd: "{{ microk8s_bin_path }}microk8s kubectl get svc -n {{ argocd_namespace }} {{ argocd_release_name }}-server -o json"
+  register: argocd_service_info
+  changed_when: false
+
+- name: Display ArgoCD access information
+  ansible.builtin.debug:
+    msg: |
+      ArgoCD has been deployed successfully!
+      - Access URL: {{ ('http://' if not argocd_ingress_ssl_passthrough else 'https://') + argocd_hostname if argocd_ingress_enabled else 'Check LoadBalancer/NodePort service' }}
+      - Username: admin
+      - Password: {{ argocd_admin_password | default('Check secret: argocd-initial-admin-secret') }}
+      - Namespace: {{ argocd_namespace }}
+      {% if argocd_ingress_enabled and not argocd_ingress_ssl_passthrough %}
+      NOTE: Using HTTP (not HTTPS) because MicroK8s nginx-ingress doesn't have SSL passthrough enabled
+      {% endif %}
+  when: argocd_install is changed or argocd_installed

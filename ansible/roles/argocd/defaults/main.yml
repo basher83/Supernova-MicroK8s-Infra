@@ -1,4 +1,31 @@
 #SPDX-License-Identifier: MIT-0
-
-
+---
 # defaults file for argocd
+
+# ArgoCD Helm release name
+argocd_release_name: "argocd"
+
+# Kubernetes namespace for ArgoCD
+argocd_namespace: "argocd"
+
+# ArgoCD hostname for ingress
+# Can be overridden in group_vars or playbook vars
+argocd_hostname: "argocd.local"
+
+# Service type (LoadBalancer, NodePort, ClusterIP)
+# Use ClusterIP when ingress is enabled (ingress handles external access)
+argocd_service_type: "ClusterIP"
+
+# Enable ingress
+argocd_ingress_enabled: true
+
+# Use SSL passthrough (nginx passes HTTPS directly to ArgoCD on port 443)
+# NOTE: Disabled because MicroK8s nginx-ingress doesn't have --enable-ssl-passthrough flag
+# Instead, we use HTTP/insecure mode where ArgoCD serves HTTP on port 80
+argocd_ingress_ssl_passthrough: false
+
+# Rollout timeout in seconds
+argocd_rollout_timeout: 600
+
+# When /snap/bin is not in the PATH
+microk8s_bin_path: ""
