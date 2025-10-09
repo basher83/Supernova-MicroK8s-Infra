@@ -194,6 +194,17 @@ variable "vm_display" {
   }
 }
 
+variable "vm_agent" {
+  type = object({
+    enabled = optional(bool, true)
+    timeout = optional(string, "15m")
+    trim    = optional(bool, true)
+    type    = optional(string, "virtio")
+  })
+  description = "The QEMU guest agent configuration. Enables communication with the VM for IP address retrieval and graceful shutdown. TRIM enabled by default for fstrim_cloned_disks."
+  default     = {}
+}
+
 variable "vm_pcie" {
   type = map(object({
     name        = string
@@ -203,6 +214,32 @@ variable "vm_pcie" {
   description = "VM host PCI device mapping."
   nullable    = true
   default     = null
+}
+
+variable "vm_rng" {
+  type = object({
+    source    = optional(string, "/dev/urandom")
+    max_bytes = optional(number, 1024)
+    period    = optional(number, 1000)
+  })
+  description = "Random number generator device configuration. Provides entropy to the VM for cryptographic operations."
+  nullable    = true
+  default = {
+    source = "/dev/urandom"
+  }
+}
+
+variable "vm_serial" {
+  type = map(object({
+    device = optional(string, "socket")
+  }))
+  description = "Serial device configuration. Enables serial console access."
+  nullable    = true
+  default = {
+    serial0 = {
+      device = "socket"
+    }
+  }
 }
 
 variable "vm_efi_disk" {
@@ -223,6 +260,8 @@ variable "vm_disk" {
     size         = number
     file_format  = optional(string, "raw")
     iothread     = optional(bool, true)
+    ssd          = optional(bool, true)
+    discard      = optional(string, "on")
     main_disk    = optional(bool, false)
   }))
   description = "VM Disks configuration. Use the 'main_disk' value to tag a disk as main to host the VM image. Only usefull with creation type 'image'."
@@ -236,20 +275,25 @@ variable "vm_disk" {
     condition     = length([for k, v in var.vm_disk : k if v.main_disk]) <= 1
     error_message = "Only one disk at maximum can be tagged as main to host the VM image."
   }
+
+  validation {
+    condition     = alltrue([for k, v in var.vm_disk : v.discard == null || contains(["on", "ignore"], v.discard)])
+    error_message = "Valid values for disk discard are: 'on', 'ignore'."
+  }
 }
 
 variable "vm_net_ifaces" {
   type = map(object({
     bridge     = string
     enabled    = optional(bool, true)
-    firewall   = optional(bool, true)
+    firewall   = optional(bool, false)
     mac_addr   = optional(string)
     model      = optional(string, "virtio")
     mtu        = optional(number, 1500)
     rate_limit = optional(string)
     vlan_id    = optional(number)
     ipv4_addr  = string
-    ipv4_gw    = string
+    ipv4_gw    = optional(string)
   }))
   description = "VM network interfaces configuration. Terraform provider bpg/proxmox cannot work properly without network access."
 

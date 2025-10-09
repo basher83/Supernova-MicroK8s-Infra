@@ -1,17 +1,3 @@
-# Copyright 2025 RalZareck
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#     https://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-
 # =============================================================================
 # = VM Creation ===============================================================
 # =============================================================================
@@ -59,6 +45,7 @@ resource "proxmox_virtual_environment_vm" "pve_vm" {
   bios          = (var.vm_type == "image") ? var.vm_bios : null
   machine       = (var.vm_type == "image") ? var.vm_machine : null
   scsi_hardware = (var.vm_type == "image") ? var.vm_scsi_hardware : null
+  tablet_device = false # Disable tablet device for better compatibility
 
   cpu {
     type  = var.vm_cpu.type
@@ -75,6 +62,30 @@ resource "proxmox_virtual_environment_vm" "pve_vm" {
   vga {
     type   = var.vm_display.type
     memory = var.vm_display.memory
+  }
+
+  agent {
+    enabled = var.vm_agent.enabled
+    timeout = var.vm_agent.timeout
+    trim    = var.vm_agent.trim
+    type    = var.vm_agent.type
+  }
+
+  # Random Number Generator for entropy
+  dynamic "rng" {
+    for_each = var.vm_rng != null ? [var.vm_rng] : []
+    content {
+      source    = rng.value.source
+      max_bytes = rng.value.max_bytes
+      period    = rng.value.period
+    }
+  }
+
+  dynamic "serial_device" {
+    for_each = var.vm_serial != null ? var.vm_serial : {}
+    content {
+      device = serial_device.value.device
+    }
   }
 
   dynamic "hostpci" {
@@ -108,6 +119,8 @@ resource "proxmox_virtual_environment_vm" "pve_vm" {
       # file_id      = (var.src_file.url == null) ? "${var.src_file.datastore_id}:iso/${var.src_file.file_name}" : proxmox_virtual_environment_download_file.vm_image[0].id
       size     = disk.value.size
       iothread = disk.value.iothread
+      ssd      = disk.value.ssd
+      discard  = disk.value.discard
     }
   }
 
@@ -119,6 +132,8 @@ resource "proxmox_virtual_environment_vm" "pve_vm" {
       file_format  = disk.value.file_format
       size         = disk.value.size
       iothread     = disk.value.iothread
+      ssd          = disk.value.ssd
+      discard      = disk.value.discard
     }
   }
 
@@ -145,7 +160,7 @@ resource "proxmox_virtual_environment_vm" "pve_vm" {
       content {
         ipv4 {
           address = ip_config.value.ipv4_addr
-          gateway = ip_config.value.ipv4_gw
+          gateway = ip_config.value.ipv4_gw != null ? ip_config.value.ipv4_gw : null
         }
       }
     }
@@ -172,6 +187,14 @@ resource "proxmox_virtual_environment_vm" "pve_vm" {
   }
 
   lifecycle {
+    # Ignore changes to cloud-init user accounts to prevent forced replacement
+    # SSH key changes in cloud-init trigger replacement which is often undesirable
+    # Note: lifecycle arguments (prevent_destroy, create_before_destroy, ignore_changes)
+    # cannot use variables - they must be static. Set these in deployment configs as needed.
+    ignore_changes = [
+      initialization[0].user_account,
+    ]
+
     precondition {
       condition     = var.vm_type == "clone" ? var.src_clone != null : true
       error_message = "Variable 'src_clone' is required when using the VM creation type is 'clone'"

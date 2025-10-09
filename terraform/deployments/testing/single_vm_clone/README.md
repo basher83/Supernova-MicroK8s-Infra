@@ -12,11 +12,14 @@ qm create 2006 --name template-ubuntu-test --description "Dual NIC, vendor-data"
 | Name | Version |
 |------|---------|
 | <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | ~> 1.9 |
+| <a name="requirement_infisical"></a> [infisical](#requirement\_infisical) | 0.15.39 |
 | <a name="requirement_proxmox"></a> [proxmox](#requirement\_proxmox) | >= 0.84.1 |
 
 ## Providers
 
-No providers.
+| Name | Version |
+|------|---------|
+| <a name="provider_infisical"></a> [infisical](#provider\_infisical) | 0.15.39 |
 
 ## Modules
 
@@ -26,17 +29,13 @@ No providers.
 
 ## Resources
 
-No resources.
+| Name | Type |
+|------|------|
+| [infisical_secrets.proxmox_secrets](https://registry.terraform.io/providers/infisical/infisical/0.15.39/docs/data-sources/secrets) | data source |
 
 ## Inputs
 
-| Name | Description | Type | Default | Required |
-|------|-------------|------|---------|:--------:|
-| <a name="input_proxmox_api_token_id"></a> [proxmox\_api\_token\_id](#input\_proxmox\_api\_token\_id) | API Token ID. | `string` | n/a | yes |
-| <a name="input_proxmox_api_token_secret"></a> [proxmox\_api\_token\_secret](#input\_proxmox\_api\_token\_secret) | API Token Secret. | `string` | n/a | yes |
-| <a name="input_proxmox_host"></a> [proxmox\_host](#input\_proxmox\_host) | Proxmox API Host. has to be in thr form IP:PORT. | `string` | n/a | yes |
-| <a name="input_proxmox_node"></a> [proxmox\_node](#input\_proxmox\_node) | Which node in the Proxmox cluster to start the virtual machine on during creation. | `string` | n/a | yes |
-| <a name="input_proxmox_ssk_private_key"></a> [proxmox\_ssk\_private\_key](#input\_proxmox\_ssk\_private\_key) | The SSH private key to be used when connecting via SSH. | `string` | n/a | yes |
+No inputs.
 
 ## Outputs
 
