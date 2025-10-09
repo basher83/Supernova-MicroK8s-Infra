@@ -22,6 +22,8 @@ exclude_paths:
   - terraform/.terraform/ # nested terraform cache
   - docs/ # documentation files
   - scripts/ # utility scripts
+  - ansible/playbooks/examples/ # example playbooks (may reference external files)
+  - ansible/roles/*/tests/ # role test boilerplate files
 # parseable: true
 # quiet: true
 # strict: true
@@ -58,8 +60,7 @@ use_default_rules: true
 # still visible, making it easier to address later.
 skip_list:
   - fqcn[action-core] # Allow non-FQCN modules for readability in infrastructure setup
-  - no-changed-when # Infrastructure setup scripts are often not idempotent by design
-  - risky-shell-pipe # Shell pipes are acceptable in controlled infrastructure setup
+  - risky-shell-pipe # Shell pipes are acceptable in controlled infrastructure setup (used with set -o pipefail)
 # Ansible-lint does not automatically load rules that have the 'opt-in' tag.
 # You must enable opt-in rules by listing each rule 'id' below.
 enable_list:
