@@ -1,3 +1,133 @@
+# VM Module
+
+Unified Terraform module for creating Proxmox VMs with support for cloning from templates, direct image imports, and template creation.
+
+## Features
+
+- **Flexible VM Creation**: Clone from templates or create from cloud images
+- **Template Support**: Create reusable VM templates for fast cloning
+- **Automated Image Download**: Optional cloud image download via URL
+- **Template + Clone Workflow**: Single module for both template creation and VM deployment
+- **Advanced Hardware**: QEMU Guest Agent, RNG device, serial console support
+- **Cloud-init Integration**: Built-in cloud-init support for automated VM configuration
+- **Dual Network Support**: Multiple network interfaces with VLAN tagging
+
+## Module Types
+
+### 1. Clone from Template (`vm_type = "clone"`)
+
+Clone VMs from existing templates for fast deployment.
+
+```hcl
+module "my_vm" {
+  source = "path/to/modules/vm"
+
+  vm_type  = "clone"
+  pve_node = "proxmox-node"
+
+  src_clone = {
+    datastore_id = "local-lvm"
+    tpl_id       = 2006
+  }
+
+  vm_name = "my-vm"
+  # ... additional configuration
+}
+```
+
+### 2. Create from Downloaded Image (`vm_type = "image"` + URL)
+
+Automatically download cloud image and create VM/template.
+
+```hcl
+module "ubuntu_template" {
+  source = "path/to/modules/vm"
+
+  vm_type     = "image"
+  vm_template = true  # Mark as template
+  pve_node    = "proxmox-node"
+
+  src_file = {
+    url          = "https://cloud-images.ubuntu.com/jammy/current/jammy-server-cloudimg-amd64.img"
+    datastore_id = "local"
+    file_name    = "ubuntu-22.04.img"
+    checksum     = "sha256:abc123..."  # Optional
+  }
+
+  vm_name = "ubuntu-22-04-template"
+  # ... additional configuration
+}
+```
+
+### 3. Create from Existing File (`vm_type = "image"` without URL)
+
+Use pre-existing cloud image file on Proxmox storage.
+
+```hcl
+module "ubuntu_template" {
+  source = "path/to/modules/vm"
+
+  vm_type     = "image"
+  vm_template = true
+  pve_node    = "proxmox-node"
+
+  src_file = {
+    datastore_id = "local"
+    file_name    = "ubuntu-22.04.img"
+    # No URL - file must already exist
+  }
+
+  vm_name = "ubuntu-22-04-template"
+  # ... additional configuration
+}
+```
+
+## Template Creation Workflow
+
+This module supports creating templates that can be used for cloning:
+
+```hcl
+# Step 1: Create template with automated download
+module "ubuntu_template" {
+  source      = "path/to/modules/vm"
+  vm_type     = "image"
+  vm_template = true
+
+  src_file = {
+    url          = "https://cloud-images.ubuntu.com/jammy/current/jammy-server-cloudimg-amd64.img"
+    datastore_id = "local"
+    file_name    = "ubuntu-22.04.img"
+  }
+
+  vm_name = "ubuntu-template"
+  vm_id   = 2006
+  # ... template configuration
+}
+
+# Step 2: Clone VMs from template
+module "production_vm" {
+  source   = "path/to/modules/vm"
+  vm_type  = "clone"
+
+  src_clone = {
+    datastore_id = "local-lvm"
+    tpl_id       = module.ubuntu_template.vm_id
+  }
+
+  vm_name = "prod-web-01"
+  # ... VM-specific configuration
+}
+```
+
+## Examples
+
+See the [deployments/examples](../../deployments/examples/) directory for complete examples:
+
+- **[template-from-url](../../deployments/examples/template-from-url/)** - Create template with automated image download
+- **[template-from-file](../../deployments/examples/template-from-file/)** - Create template from existing image file
+- **[single-vm](../../deployments/examples/single-vm/)** - Deploy single VM by cloning template
+- **[microk8s-cluster](../../deployments/examples/microk8s-cluster/)** - Deploy multi-VM cluster via vm-cluster module
+
 <!-- BEGIN_TF_DOCS -->
 ## Requirements
 
@@ -20,6 +150,7 @@ No modules.
 
 | Name | Type |
 |------|------|
+| [proxmox_virtual_environment_download_file.vm_image](https://registry.terraform.io/providers/bpg/proxmox/latest/docs/resources/virtual_environment_download_file) | resource |
 | [proxmox_virtual_environment_vm.pve_vm](https://registry.terraform.io/providers/bpg/proxmox/latest/docs/resources/virtual_environment_vm) | resource |
 
 ## Inputs
@@ -28,7 +159,7 @@ No modules.
 |------|-------------|------|---------|:--------:|
 | <a name="input_pve_node"></a> [pve\_node](#input\_pve\_node) | PVE Node name on which the VM will be created on. | `string` | n/a | yes |
 | <a name="input_src_clone"></a> [src\_clone](#input\_src\_clone) | The target to clone as base for the VM. Cannot be used with 'src\_file' | <pre>object({<br/>    datastore_id = string<br/>    node_name    = optional(string)<br/>    tpl_id       = number<br/>  })</pre> | `null` | no |
-| <a name="input_src_file"></a> [src\_file](#input\_src\_file) | The target ISO file to use as base for the VM. Cannot be used with 'src\_clone' | <pre>object({<br/>    datastore_id = string<br/>    file_name    = string<br/>  })</pre> | `null` | no |
+| <a name="input_src_file"></a> [src\_file](#input\_src\_file) | The target ISO/image file to use as base for the VM. If 'url' is provided, the image will be downloaded. Cannot be used with 'src\_clone' | <pre>object({<br/>    datastore_id = string<br/>    file_name    = string<br/>    url          = optional(string)<br/>    checksum     = optional(string)<br/>    file_format  = optional(string, "img")<br/>  })</pre> | `null` | no |
 | <a name="input_vm_agent"></a> [vm\_agent](#input\_vm\_agent) | The QEMU guest agent configuration. Enables communication with the VM for IP address retrieval and graceful shutdown. TRIM enabled by default for fstrim\_cloned\_disks. | <pre>object({<br/>    enabled = optional(bool, true)<br/>    timeout = optional(string, "15m")<br/>    trim    = optional(bool, true)<br/>    type    = optional(string, "virtio")<br/>  })</pre> | `{}` | no |
 | <a name="input_vm_bios"></a> [vm\_bios](#input\_vm\_bios) | The BIOS Implementation of the VM. Can either be 'seabios' or 'ovmf'. | `string` | `"ovmf"` | no |
 | <a name="input_vm_cpu"></a> [vm\_cpu](#input\_vm\_cpu) | The CPU Configuration of the VM. | <pre>object({<br/>    type  = optional(string, "host")<br/>    cores = optional(number, 2)<br/>    units = optional(number)<br/>  })</pre> | `{}` | no |
@@ -50,7 +181,8 @@ No modules.
 | <a name="input_vm_serial"></a> [vm\_serial](#input\_vm\_serial) | Serial device configuration. Enables serial console access. | <pre>map(object({<br/>    device = optional(string, "socket")<br/>  }))</pre> | <pre>{<br/>  "serial0": {<br/>    "device": "socket"<br/>  }<br/>}</pre> | no |
 | <a name="input_vm_start"></a> [vm\_start](#input\_vm\_start) | The start settings for the VM. | <pre>object({<br/>    on_deploy  = bool<br/>    on_boot    = bool<br/>    order      = optional(number, 0)<br/>    up_delay   = optional(number, 0)<br/>    down_delay = optional(number, 0)<br/>  })</pre> | <pre>{<br/>  "down_delay": 0,<br/>  "on_boot": true,<br/>  "on_deploy": true,<br/>  "order": 0,<br/>  "up_delay": 0<br/>}</pre> | no |
 | <a name="input_vm_tags"></a> [vm\_tags](#input\_vm\_tags) | A list of tags associated to the VM. | `list(string)` | `[]` | no |
-| <a name="input_vm_type"></a> [vm\_type](#input\_vm\_type) | The source type used for the creation of the container. Can either be 'clone' or 'image'. | `string` | n/a | yes |
+| <a name="input_vm_template"></a> [vm\_template](#input\_vm\_template) | Convert the VM into a template. Templates cannot be started and are used as base for cloning VMs. | `bool` | `false` | no |
+| <a name="input_vm_type"></a> [vm\_type](#input\_vm\_type) | The source type used for the creation of the vm. Can either be 'clone' or 'image'. | `string` | n/a | yes |
 | <a name="input_vm_user_data"></a> [vm\_user\_data](#input\_vm\_user\_data) | cloud-init configuration for the VM's users | `string` | `null` | no |
 
 ## Outputs

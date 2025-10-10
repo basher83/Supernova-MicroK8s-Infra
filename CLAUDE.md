@@ -10,86 +10,6 @@ Supernova-MicroK8s-Infra is a homelab infrastructure-as-code project that automa
 
 This project uses **mise** (formerly rtx) for tool management. All development tools are defined in `.mise.toml`.
 
-```bash
-# Initial setup
-mise install                    # Install all required tools
-mise run setup                  # Install hooks and generate docs
-mise run pip-install           # Install Python dependencies (Ansible)
-mise run ansible-setup         # Install Ansible collections
-
-# Verify setup
-mise doctor                     # Check mise configuration
-```
-
-## Common Development Commands
-
-### Terraform Workflows
-
-```bash
-# Format and validate
-mise run fmt                    # Format Terraform files
-mise run fmt-check             # Check formatting (CI-friendly)
-mise run prod-validate         # Validate Terraform configuration
-mise run lint-prod             # Run TFLint
-
-# Documentation
-mise run docs                   # Generate Terraform docs
-mise run docs-check            # Verify docs are up-to-date
-
-# Complete checks
-mise run check                  # Format, lint, and validate
-mise run full-check            # Complete validation including security
-
-# Terraform operations (from terraform/ directory)
-mise run plan                   # Run terraform plan
-mise run apply                  # Run terraform apply
-mise run destroy               # Run terraform destroy
-```
-
-### Ansible Workflows
-
-```bash
-# From ansible/ directory
-mise run ansible-install        # Install Ansible requirements
-mise run ansible-ping          # Test connectivity to all hosts
-
-# Run playbooks
-ansible-playbook playbooks/microk8s-deploy.yml                    # Main deployment
-ansible-playbook --syntax-check playbooks/microk8s-deploy.yml    # Syntax check
-ansible-playbook --check --diff playbooks/microk8s-deploy.yml    # Dry run
-```
-
-### Linting and Validation
-
-```bash
-mise run lint-all              # Run all linters (shell, YAML, Markdown, Terraform, Ansible)
-mise run shellcheck            # Lint shell scripts
-mise run yaml-lint             # Lint YAML files
-mise run markdown-lint         # Lint Markdown files
-mise run ansible-lint          # Lint Ansible playbooks/roles
-```
-
-### Formatting
-
-```bash
-mise run fmt-all               # Format all files (Terraform and YAML)
-mise run yaml-fmt              # Format YAML files
-```
-
-### Pre-commit Hooks
-
-```bash
-mise run hooks-install         # Install pre-commit and infisical hooks
-mise run hooks-run             # Run all pre-commit hooks
-mise run infisical-scan        # Scan for secrets
-```
-
-### Version Management
-
-```bash
-mise run changelog             # Update CHANGELOG.md using git-cliff
-```
-
 ## Repository Architecture
 
 ### High-Level Structure
@@ -105,25 +25,21 @@ This separation ensures clean boundaries between infrastructure provisioning and
 
 The Terraform codebase uses a **modular architecture** organized into three tiers:
 
-```
+```text
 terraform/
 ├── modules/              # Reusable modules (building blocks)
 │   ├── vm/              # New unified VM module (flexible)
-│   ├── vm-clone/        # Legacy: Clone from template
-│   ├── vm-template/     # Legacy: Create VM template
-│   ├── image/           # Download cloud images
-│   └── lxc/             # LXC container management
+│   ├── lxc/             # LXC container management
+│   └── vm-cluster/      # Cluster management
 ├── deployments/         # Environment-specific deployments
 │   └── testing/
-│       └── single_vm_clone/  # Example deployment
-└── bgp-example/         # BGP routing examples
+│       examples/
 ```
 
 **Key Architecture Principles:**
 
 - **modules/**: Reusable building blocks with no hardcoded values. Accept all configuration via variables.
 - **deployments/**: Environment-specific configurations (testing, staging, production). Call modules with specific values.
-- **Legacy modules** (vm-clone, vm-template): Transitioning to unified `vm/` module which supports both templates and clones via `vm_type` variable.
 
 **New `vm/` Module Pattern:**
 
@@ -148,7 +64,7 @@ module "pve_vm" {
 
 Ansible follows standard Galaxy role structure:
 
-```
+```text
 ansible/
 ├── ansible.cfg          # Proxmox dynamic inventory, SSH optimization, fact caching
 ├── inventory/           # Dynamic (Proxmox) and static inventory files
@@ -166,7 +82,7 @@ ansible/
 
 **Key Features:**
 
-- **Dynamic Inventory**: Uses Proxmox for automatic host discovery
+- **Dynamic Inventory**: [WIP] Uses Proxmox for automatic host discovery
 - **Secrets Management**: Infisical integration with environment fallbacks (see `tasks/infisical-secret-lookup.yml`)
 - **Idempotency**: All roles designed for safe re-runs with state checking
 - **Tags**: Granular execution control (`install`, `configure`, `validate`)
@@ -183,12 +99,7 @@ Reference `tasks/INDEX.md` for deployment roadmap and learning path.
 
 ### Documentation
 
-- **docs/**: Architecture decisions, standards, troubleshooting guides
-  - `docs/standards/ansible-standards.md`: Ansible best practices
-  - `docs/terraform/`: Terraform-specific documentation
-  - `docs/iac-implementation-plan.md`: Future Scalr integration plan
-- **README.md**: Project overview
-- **ansible/README.md**: Ansible-specific setup and patterns
+- Refer to @docs/INDEX.md for documentation
 
 ## Important Patterns and Conventions
 
@@ -197,8 +108,8 @@ Reference `tasks/INDEX.md` for deployment roadmap and learning path.
 1. **Module Variables**: Use `vm_clone_template_id` (not just `template_id`) for clarity when cloning VMs
 2. **Cloud-init SSH Keys**: Cloud-init SSH key changes trigger forced replacement - this is expected (see lifecycle in `modules/vm-clone/main.tf:120-122`)
 3. **Provider**: Uses `bpg/proxmox` provider (>=0.84.1), not the older Telmate provider
-4. **Formatting**: Always run `mise run fmt` before committing
-5. **Documentation**: Auto-generated via terraform-docs - run `mise run docs` after module changes
+4. **Formatting**: Always run `tofu fmt, tofu validate, tflint` before committing
+5. **Documentation**: Auto-generated via terraform-docs - run `terraform-docs markdown . --output-file README.md` after module changes
 
 ### Ansible Best Practices
 
@@ -238,30 +149,19 @@ All infrastructure secrets (Proxmox credentials, tokens, etc.) are retrieved fro
 Standard deployment follows this sequence:
 
 1. **Create Proxmox VM Template** (PREP-001 in tasks/)
-2. **Configure Terraform** (`terraform.tfvars`)
-3. **Deploy VMs**: `cd terraform && mise run apply`
+2. **Configure Terraform** (`terraform.auto.tfvars`)
+3. **Deploy VMs**: [WIP]: Modules are set for deployments, `terraform/deployments/*` is the location for the deployments.
 4. **Configure Cluster**: `cd ansible && ansible-playbook playbooks/microk8s-deploy.yml`
 5. **Verify Deployment**: Check MicroK8s, Rancher, and ArgoCD
 
 See `tasks/INDEX.md` for detailed step-by-step guidance.
-
-## Tool Versions
-
-Managed via `.mise.toml`. Current key tools:
-
-- Terraform: 1.13.3
-- Python: 3.13.7
-- Pre-commit: 4.3.0
-- Terraform-docs: 0.20.0
-- TFLint: 0.59.1
-- Ansible: Installed via pip (see requirements.txt)
 
 ## Testing
 
 ```bash
 # Terraform
 cd terraform
-terraform plan -var-file="testing.tfvars"
+tofu plan
 
 # Ansible
 ansible-playbook --syntax-check playbooks/microk8s-deploy.yml
@@ -283,4 +183,4 @@ mise run hooks-run
 
 - **Future Plan**: Migration to Scalr for multi-environment management (see `docs/iac-implementation-plan.md`)
 - **Module Consolidation**: Migrating from separate vm-clone/vm-template modules to unified `vm/` module
-- **OpenTofu**: Repository structured for future OpenTofu migration
+- **OpenTofu**: Repository has completed the migration to OpenTofu

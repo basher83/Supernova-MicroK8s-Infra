@@ -6,6 +6,24 @@ locals {
   src_file_disk = anytrue([for k, v in var.vm_disk : v.main_disk]) ? [for k, v in var.vm_disk : k if v.main_disk] : [for k, v in var.vm_disk : k if k == keys(var.vm_disk)[0]]
 }
 
+# =============================================================================
+# = Image Download (Optional) =================================================
+# =============================================================================
+# Downloads cloud image if URL is provided in src_file.url
+# This enables automated image management via Terraform instead of manual downloads
+
+resource "proxmox_virtual_environment_download_file" "vm_image" {
+  count = var.vm_type == "image" && var.src_file != null && var.src_file.url != null ? 1 : 0
+
+  content_type       = "iso"
+  datastore_id       = var.src_file.datastore_id
+  node_name          = var.pve_node
+  url                = var.src_file.url
+  file_name          = var.src_file.file_name
+  checksum           = var.src_file.checksum
+  checksum_algorithm = var.src_file.checksum != null ? var.src_file.checksum_algorithm : null
+}
+
 resource "proxmox_virtual_environment_vm" "pve_vm" {
   # Proxmox
   node_name = var.pve_node
@@ -16,10 +34,11 @@ resource "proxmox_virtual_environment_vm" "pve_vm" {
   tags        = var.vm_tags
   vm_id       = var.vm_id
   pool_id     = var.vm_pool
+  template    = var.vm_template
 
-  # Boot settings
-  started = var.vm_start.on_deploy
-  on_boot = var.vm_start.on_boot
+  # Boot settings (templates cannot be started)
+  started = var.vm_template ? false : var.vm_start.on_deploy
+  on_boot = var.vm_template ? false : var.vm_start.on_boot
 
   startup {
     order      = var.vm_start.order
@@ -109,14 +128,15 @@ resource "proxmox_virtual_environment_vm" "pve_vm" {
   }
 
   # If the creation type is 'image', the fist disk will be used as base for the VM img file.
+  # Supports both downloaded images (when URL provided) and existing files
   dynamic "disk" {
     for_each = (var.vm_type == "image") ? { for k, v in var.vm_disk : k => v if contains(local.src_file_disk, k) } : {}
     content {
       interface    = disk.key
       datastore_id = disk.value.datastore_id
       file_format  = disk.value.file_format
-      file_id      = "${var.src_file.datastore_id}:iso/${var.src_file.file_name}"
-      # file_id      = (var.src_file.url == null) ? "${var.src_file.datastore_id}:iso/${var.src_file.file_name}" : proxmox_virtual_environment_download_file.vm_image[0].id
+      # Use downloaded image if URL was provided, otherwise reference existing file
+      file_id  = var.src_file.url != null ? proxmox_virtual_environment_download_file.vm_image[0].id : "${var.src_file.datastore_id}:iso/${var.src_file.file_name}"
       size     = disk.value.size
       iothread = disk.value.iothread
       ssd      = disk.value.ssd

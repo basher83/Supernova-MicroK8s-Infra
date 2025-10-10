@@ -1,17 +1,3 @@
-# Copyright 2025 RalZareck
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#     https://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-
 # =============================================================================
 # ===== General ===============================================================
 # =============================================================================
@@ -28,7 +14,7 @@ variable "pve_node" {
 
 variable "vm_type" {
   type        = string
-  description = "The source type used for the creation of the container. Can either be 'clone' or 'image'."
+  description = "The source type used for the creation of the vm. Can either be 'clone' or 'image'."
 
   validation {
     condition     = contains(["clone", "image"], var.vm_type)
@@ -49,10 +35,14 @@ variable "src_clone" {
 
 variable "src_file" {
   type = object({
-    datastore_id = string
-    file_name    = string
+    datastore_id       = string
+    file_name          = string
+    url                = optional(string)
+    checksum           = optional(string)
+    checksum_algorithm = optional(string, "sha256")
+    file_format        = optional(string, "img")
   })
-  description = "The target ISO file to use as base for the VM. Cannot be used with 'src_clone'"
+  description = "The target ISO/image file to use as base for the VM. If 'url' is provided, the image will be downloaded. Cannot be used with 'src_clone'"
   nullable    = true
   default     = null
 }
@@ -96,6 +86,12 @@ variable "vm_tags" {
   type        = list(string)
   description = "A list of tags associated to the VM."
   default     = []
+}
+
+variable "vm_template" {
+  type        = bool
+  description = "Convert the VM into a template. Templates cannot be started and are used as base for cloning VMs."
+  default     = false
 }
 
 variable "vm_start" {
