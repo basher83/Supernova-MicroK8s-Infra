@@ -23,31 +23,31 @@ This separation ensures clean boundaries between infrastructure provisioning and
 
 ### Terraform Module System
 
-The Terraform codebase uses a **modular architecture** organized into three tiers:
+The Terraform codebase uses a **modular architecture** organized into two tiers:
 
 ```text
 terraform/
 ├── modules/              # Reusable modules (building blocks)
-│   ├── vm/              # New unified VM module (flexible)
-│   ├── lxc/             # LXC container management
-│   └── vm-cluster/      # Cluster management
+│   ├── vm/              # Unified VM module (clone, image, template)
+│   └── lxc/             # LXC container management
 ├── deployments/         # Environment-specific deployments
-│   └── testing/
-│       examples/
+│   ├── examples/        # Pattern demonstrations
+│   └── testing/         # Test deployments
 ```
 
 **Key Architecture Principles:**
 
 - **modules/**: Reusable building blocks with no hardcoded values. Accept all configuration via variables.
 - **deployments/**: Environment-specific configurations (testing, staging, production). Call modules with specific values.
+- **Composition over Abstraction**: Use Terraform's `for_each` with base modules rather than creating wrapper modules.
 
-**New `vm/` Module Pattern:**
+**Single VM Pattern:**
 
 ```hcl
 module "pve_vm" {
   source = "../../modules/vm"
 
-  vm_type  = "clone"  # or "template"
+  vm_type  = "clone"  # or "image" for template creation
   pve_node = var.proxmox_node
 
   src_clone = {
@@ -59,6 +59,48 @@ module "pve_vm" {
   # ... additional configuration
 }
 ```
+
+**Multi-VM Pattern (for_each):**
+
+For cluster deployments, use `for_each` with the vm module instead of a separate cluster module:
+
+```hcl
+locals {
+  nodes = {
+    "node-1" = { pve_node = "pve1", ip_address = "192.168.1.11", cpu_cores = 4, memory = 8192 }
+    "node-2" = { pve_node = "pve2", ip_address = "192.168.1.12", cpu_cores = 4, memory = 8192 }
+  }
+}
+
+module "cluster_vms" {
+  source   = "../../modules/vm"
+  for_each = local.nodes
+
+  vm_type  = "clone"
+  vm_name  = each.key
+  pve_node = each.value.pve_node
+
+  vm_cpu = { cores = each.value.cpu_cores }
+  vm_mem = { dedicated = each.value.memory }
+
+  vm_net_ifaces = {
+    net0 = {
+      bridge    = "vmbr0"
+      ipv4_addr = "${each.value.ip_address}/24"
+      ipv4_gw   = "192.168.1.1"
+    }
+  }
+  # ... additional configuration
+}
+```
+
+**Why for_each over wrapper modules:**
+- ✅ Maximum flexibility - full access to vm module capabilities
+- ✅ Clear logic - deployment configuration visible in one place
+- ✅ Terraform best practices - native for_each is more idiomatic
+- ✅ DRY principle - reuses vm module without duplication
+
+See `terraform/deployments/examples/microk8s-cluster/` for a complete multi-VM example.
 
 ### Ansible Architecture
 
