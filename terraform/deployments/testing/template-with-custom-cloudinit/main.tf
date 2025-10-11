@@ -14,6 +14,11 @@
 #
 # IMPORTANT: Template creation requires SSH access to the Proxmox host.
 # See provider.tf for SSH configuration details.
+#
+# This example follows DRY principles by:
+# - Only specifying template-specific overrides and custom user-data
+# - Not repeating module defaults (see terraform/modules/vm/DEFAULTS.md)
+# - Keeping configuration minimal - templates are refined during cloning
 
 # =============================================================================
 # = Upload Custom Cloud-Init User-Data ========================================
@@ -35,18 +40,10 @@ resource "proxmox_virtual_environment_file" "cloud_init_user_data" {
 # =============================================================================
 
 module "ubuntu_template" {
-  source = "../../../modules/vm"
-
-  # VM Type - using 'image' type with URL download
-  vm_type  = "image"
-  pve_node = var.proxmox_node
-
-  # Mark as template (cannot be started, used for cloning)
+  source      = "../../../modules/vm"
+  vm_type     = "image"
+  pve_node    = var.proxmox_node
   vm_template = true
-
-  # Cloud image download configuration
-  # NOTE: cloud_image_datastore must be file-based storage (e.g., 'local')
-  # Cannot use block-based storage like 'local-lvm'
   src_file = {
     url          = var.cloud_image_url
     datastore_id = var.cloud_image_datastore
@@ -54,92 +51,41 @@ module "ubuntu_template" {
     checksum     = var.cloud_image_checksum # Optional but recommended
   }
 
-  # VM Identification
-  vm_name = var.template_name
-  vm_id   = var.template_id
-  # Note: Avoid timestamp() in descriptions - causes constant drift on every plan
-  vm_description = "Ubuntu 24.04 LTS Cloud Template with Custom Cloud-Init"
-  vm_tags        = ["template", "ubuntu", "cloud-init", "custom"]
-
-  # Hardware Configuration (minimal for template)
-  vm_bios    = "ovmf"
-  vm_machine = "q35"
-  vm_os      = "l26"
-
-  vm_cpu = {
-    cores = 2
-    type  = "host"
-  }
-
-  vm_mem = {
-    dedicated = 2048
-  }
-
-  # QEMU Guest Agent (essential for cloned VMs)
-  vm_agent = {
-    enabled = true
-    timeout = "15m"
-    trim    = true
-  }
-
-  # Display Configuration
-  vm_display = {
-    type   = "serial0"
-    memory = 16
-  }
-
-  # EFI Disk (required for UEFI boot)
+  vm_name        = var.template_name
+  vm_id          = var.template_id
+  vm_description = var.template_description
+  vm_tags        = var.template_tags
   vm_efi_disk = {
     datastore_id = var.datastore
-    file_format  = "raw"
-    type         = "4m"
   }
 
-  # Disk Configuration (will be imported from cloud image)
   vm_disk = {
     scsi0 = {
       datastore_id = var.datastore
-      size         = 32 # Cloud image will be resized to this
-      file_format  = "raw"
-      iothread     = true
-      ssd          = true
-      discard      = "on"
+      size         = var.disk_size
       main_disk    = true
     }
   }
 
-  # Network Configuration (minimal, will be configured during clone)
   vm_net_ifaces = {
     net0 = {
       bridge    = var.network_bridge
-      firewall  = false
       ipv4_addr = "dhcp"
     }
   }
 
-  # Cloud-init Configuration with Custom User-Data
   vm_init = {
     datastore_id = var.cloud_init_datastore
-    interface    = "ide0"
-
     dns = {
       servers = var.dns_servers
     }
-
-    # Note: vm_init.user is NOT set because we're using custom user_data
-    # Setting both would cause a validation error
   }
 
-  # Reference the uploaded custom user-data file
   vm_user_data = proxmox_virtual_environment_file.cloud_init_user_data.id
 
-  # VM Start Settings (templates don't start)
   vm_start = {
-    on_deploy  = false
-    on_boot    = false
-    order      = 0
-    up_delay   = 0
-    down_delay = 0
+    on_deploy = false
+    on_boot   = false
   }
 }
 

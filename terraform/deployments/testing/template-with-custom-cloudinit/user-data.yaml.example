@@ -113,7 +113,7 @@ bootcmd:
 # Run commands after cloud-init completes
 runcmd:
   - echo 'Starting custom configuration...'
-  - systemctl enable qemu-guest-agent
+  # qemu-guest-agent is statically enabled, just ensure it's started
   - systemctl start qemu-guest-agent
   # Add your custom commands here
   # Example: Install Docker
