@@ -106,6 +106,36 @@ variable "datastore" {
 }
 
 # =============================================================================
+# = Template Metadata =========================================================
+# =============================================================================
+
+variable "template_description" {
+  type        = string
+  description = "Description for the VM template"
+  default     = "Ubuntu 24.04 LTS Cloud Template with Custom Cloud-Init"
+}
+
+variable "template_tags" {
+  type        = list(string)
+  description = "Tags to apply to the template"
+  default     = ["template", "ubuntu", "cloud-init", "custom"]
+}
+
+# =============================================================================
+# = Hardware Configuration ====================================================
+# =============================================================================
+
+variable "disk_size" {
+  type        = number
+  description = "Disk size in GB (keep minimal for templates, expand during clone)"
+  default     = 12
+}
+
+# Note: CPU, memory, BIOS, machine, OS, agent, disk format settings removed
+# Templates use module defaults - customize during cloning
+# See terraform/modules/vm/DEFAULTS.md for default values
+
+# =============================================================================
 # = Network Variables =========================================================
 # =============================================================================
 
@@ -114,3 +144,6 @@ variable "network_bridge" {
   description = "Network bridge for the template"
   default     = "vmbr0"
 }
+
+# Note: network_firewall removed - module defaults to false
+# Note: cloud_init_interface removed - module defaults to "ide2"

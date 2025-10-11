@@ -79,9 +79,9 @@ variable "vm_tags" {
 # =============================================================================
 
 variable "cpu_cores" {
-  description = "Number of CPU cores"
+  description = "Number of CPU cores (override module default of 2)"
   type        = number
-  default     = 2
+  default     = 4
 
   validation {
     condition     = var.cpu_cores > 0 && var.cpu_cores <= 128
@@ -89,14 +89,8 @@ variable "cpu_cores" {
   }
 }
 
-variable "cpu_type" {
-  description = "CPU type (host for best performance)"
-  type        = string
-  default     = "host"
-}
-
 variable "memory" {
-  description = "Memory in MB"
+  description = "Memory in MB (override module default of 2048)"
   type        = number
   default     = 4096
 
@@ -117,6 +111,12 @@ variable "disk_size" {
   }
 }
 
+variable "display_type" {
+  description = "Display type for the VM (module default is 'std', common override is 'serial0')"
+  type        = string
+  default     = "serial0"
+}
+
 # =============================================================================
 # = Network Configuration =====================================================
 # =============================================================================
@@ -128,10 +128,12 @@ variable "network_bridge" {
 }
 
 variable "vlan_id" {
-  description = "VLAN ID for network isolation (null for no VLAN)"
+  description = "VLAN ID for network isolation (null for no VLAN, module default)"
   type        = number
   default     = null
 }
+
+# Note: network_firewall removed - module defaults to false
 
 variable "ip_address" {
   description = "Static IP address for the VM (without CIDR notation)"
@@ -181,10 +183,12 @@ variable "network_bridge_secondary" {
 }
 
 variable "vlan_id_secondary" {
-  description = "VLAN ID for secondary network interface (null for no VLAN)"
+  description = "VLAN ID for secondary network interface (null for no VLAN, module default)"
   type        = number
   default     = null
 }
+
+# Note: network_firewall_secondary removed - module defaults to false
 
 variable "ip_address_secondary" {
   description = "Static IP address for secondary NIC (without CIDR notation)"
@@ -228,6 +232,12 @@ variable "dns_servers" {
 # = Cloud-init Configuration ==================================================
 # =============================================================================
 
+variable "cloud_init_datastore" {
+  description = "Datastore for cloud-init drive (must support snippets)"
+  type        = string
+  default     = "local"
+}
+
 variable "vm_username" {
   description = "Username for the VM (created via cloud-init)"
   type        = string
@@ -250,31 +260,15 @@ variable "ssh_public_keys" {
 # =============================================================================
 
 variable "start_on_deploy" {
-  description = "Start VM immediately after deployment"
+  description = "Start VM immediately after deployment (module default is true)"
   type        = bool
   default     = true
 }
 
 variable "start_on_boot" {
-  description = "Start VM automatically when Proxmox node boots"
+  description = "Start VM automatically when Proxmox node boots (module default is true)"
   type        = bool
   default     = true
 }
 
-variable "boot_order" {
-  description = "Boot order priority (0 = highest priority)"
-  type        = number
-  default     = 0
-}
-
-variable "boot_up_delay" {
-  description = "Delay in seconds before starting VM on boot"
-  type        = number
-  default     = 0
-}
-
-variable "boot_down_delay" {
-  description = "Delay in seconds when shutting down VM"
-  type        = number
-  default     = 0
-}
+# Note: boot_order, boot_up_delay, boot_down_delay removed - module defaults to 0

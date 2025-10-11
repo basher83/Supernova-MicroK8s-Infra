@@ -6,13 +6,18 @@
 #
 # Features:
 # - Uses pre-downloaded cloud images
-# - Template creation with minimal configuration
+# - Minimal configuration (templates rely on module defaults)
 # - Compatible with shell script workflows (build-template.sh)
 #
 # Use Case: When images are managed outside Terraform (manual downloads, timers)
 #
 # IMPORTANT: Template creation requires SSH access to the Proxmox host.
 # See provider.tf for SSH configuration details.
+#
+# This example follows DRY principles by:
+# - Only specifying template-specific overrides
+# - Not repeating module defaults (see terraform/modules/vm/DEFAULTS.md)
+# - Keeping configuration minimal - templates are refined during cloning
 
 # =============================================================================
 # = Template Creation from Existing File ======================================
@@ -21,14 +26,14 @@
 module "ubuntu_template" {
   source = "../../../modules/vm"
 
-  # VM Type - using 'image' type with existing file
+  # Required: VM type and Proxmox node
   vm_type  = "image"
   pve_node = var.proxmox_node
 
-  # Mark as template (cannot be started, used for cloning)
+  # Override: Mark as template (cannot be started, used for cloning)
   vm_template = true
 
-  # Reference existing cloud image file
+  # Required: Reference existing cloud image file
   # File must already exist on Proxmox storage
   src_file = {
     datastore_id = var.cloud_image_datastore
@@ -36,90 +41,69 @@ module "ubuntu_template" {
     # No URL - file already exists on Proxmox
   }
 
-  # VM Identification
-  vm_name = var.template_name
-  vm_id   = var.template_id
-  # Note: Avoid timestamp() in descriptions - causes constant drift on every plan
-  vm_description = "Ubuntu 22.04 LTS Cloud Template"
-  vm_tags        = ["template", "ubuntu", "cloud-init"]
+  # Required: VM identification
+  vm_name        = var.template_name
+  vm_id          = var.template_id
+  vm_description = var.template_description
+  vm_tags        = var.template_tags
 
-  # Hardware Configuration (minimal for template)
-  vm_bios    = "ovmf"
-  vm_machine = "q35"
-  vm_os      = "l26"
+  # Templates use module defaults for CPU/memory
+  # These will be customized during cloning
 
-  vm_cpu = {
-    cores = 2
-    type  = "host"
-  }
-
-  vm_mem = {
-    dedicated = 2048
-  }
-
-  # QEMU Guest Agent (essential for cloned VMs)
-  vm_agent = {
-    enabled = true
-    timeout = "15m"
-    trim    = true
-  }
-
-  # Display Configuration
-  vm_display = {
-    type   = "serial0"
-    memory = 16
-  }
-
-  # EFI Disk (required for UEFI boot)
+  # Required: EFI disk for UEFI boot
   vm_efi_disk = {
     datastore_id = var.datastore
-    file_format  = "raw"
-    type         = "4m"
+    # file_format, type have sensible defaults
   }
 
-  # Disk Configuration (will be imported from cloud image)
+  # Required: Disk configuration (will be imported from cloud image)
   vm_disk = {
     scsi0 = {
       datastore_id = var.datastore
-      size         = 32 # Cloud image will be resized to this
-      file_format  = "raw"
-      iothread     = true
-      ssd          = true
-      discard      = "on"
+      size         = var.disk_size
       main_disk    = true
+      # file_format, iothread, ssd, discard all have optimal defaults
     }
   }
 
-  # Network Configuration (minimal, will be configured during clone)
+  # Required: Network configuration (minimal, will be configured during clone)
   vm_net_ifaces = {
     net0 = {
       bridge    = var.network_bridge
-      firewall  = false
       ipv4_addr = "dhcp"
+      # firewall defaults to false - no need to specify
     }
   }
 
-  # Cloud-init Configuration
+  # Required: Cloud-init configuration
   vm_init = {
-    datastore_id = "local"
-    interface    = "ide0"
+    datastore_id = var.cloud_init_datastore
+    # interface defaults to "ide2" - no need to specify
 
     dns = {
-      servers = ["1.1.1.1", "8.8.8.8"]
+      servers = var.dns_servers
     }
 
     # Note: User configuration not needed for template
     # It will be set during cloning
   }
 
-  # VM Start Settings (templates don't start)
+  # Override: Templates don't start
   vm_start = {
-    on_deploy  = false
-    on_boot    = false
-    order      = 0
-    up_delay   = 0
-    down_delay = 0
+    on_deploy = false
+    on_boot   = false
+    # order, up_delay, down_delay default to 0 - no need to specify
   }
+
+  # Note: The following are NOT specified because module defaults are optimal:
+  # - vm_bios (defaults to "ovmf" for UEFI)
+  # - vm_machine (defaults to "q35" modern chipset)
+  # - vm_os (defaults to "l26" for Linux 2.6+)
+  # - vm_cpu (defaults to 2 cores, host type)
+  # - vm_mem (defaults to 2048 MB)
+  # - vm_agent (defaults to enabled)
+  # Templates use minimal resources - customize during cloning
+  # See terraform/modules/vm/DEFAULTS.md for complete defaults reference
 }
 
 # =============================================================================

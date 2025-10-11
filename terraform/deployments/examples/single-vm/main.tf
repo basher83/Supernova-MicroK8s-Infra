@@ -4,27 +4,11 @@
 # This example demonstrates deploying a single VM using the vm module with
 # the template-clone approach. Perfect for application servers, databases,
 # development environments, or any single-VM workload.
-
-terraform {
-  required_version = ">= 1.0"
-
-  required_providers {
-    proxmox = {
-      version = ">= 0.84.1"
-      source  = "bpg/proxmox"
-    }
-  }
-}
-
-# Configure the Proxmox provider
-provider "proxmox" {
-  endpoint = var.proxmox_endpoint
-  insecure = var.proxmox_insecure
-
-  # Authentication handled via environment variables or API token
-  # PROXMOX_VE_USERNAME, PROXMOX_VE_PASSWORD
-  # or PROXMOX_VE_API_TOKEN
-}
+#
+# This example follows DRY principles by:
+# - Only specifying values that differ from module defaults
+# - Not repeating module defaults (see terraform/modules/vm/DEFAULTS.md)
+# - Keeping configuration minimal and focused
 
 # =============================================================================
 # = Single VM Deployment ======================================================
@@ -33,107 +17,82 @@ provider "proxmox" {
 module "single_vm" {
   source = "../../../modules/vm"
 
-  # VM Type - using template clone for fast deployment
+  # Required: VM type and Proxmox node
   vm_type  = "clone"
   pve_node = var.proxmox_node
 
-  # Clone from existing template
+  # Required: Clone source
   src_clone = {
     datastore_id = var.datastore
     tpl_id       = var.template_id
   }
 
-  # VM Identification
+  # Required: VM identification
   vm_name        = var.vm_name
   vm_id          = var.vm_id
   vm_description = var.vm_description
   vm_tags        = var.vm_tags
 
-  # Hardware Configuration
-  vm_bios    = "ovmf"
-  vm_machine = "q35"
-  vm_os      = "l26"
-
+  # Override: Production-ready CPU/memory (defaults are 2 cores / 2GB)
   vm_cpu = {
-    cores = var.cpu_cores
-    type  = var.cpu_type
+    cores = var.cpu_cores # Override for production workload
+    # type defaults to "host" - no need to specify
   }
 
   vm_mem = {
-    dedicated = var.memory
+    dedicated = var.memory # Override for production workload
+    # floating/shared default to null - no need to specify
   }
 
-  # QEMU Guest Agent (enabled for IP retrieval and graceful shutdown)
-  vm_agent = {
-    enabled = true
-    timeout = "15m"
-    trim    = true # Enable fstrim for cloned disks
-  }
+  # Override: Display type if needed (default is "std")
+  # Only specify if you need serial console or specific display adapter
+  vm_display = var.display_type != "std" ? {
+    type = var.display_type
+  } : {}
 
-  # Random Number Generator (for entropy)
-  vm_rng = {
-    source = "/dev/urandom"
-  }
-
-  # Serial Console
-  vm_serial = {
-    serial0 = {
-      device = "socket"
-    }
-  }
-
-  # Display Configuration
-  vm_display = {
-    type   = "serial0"
-    memory = 16
-  }
-
-  # EFI Disk (required for UEFI boot)
+  # Required: EFI disk for UEFI boot
   vm_efi_disk = {
     datastore_id = var.datastore
-    file_format  = "raw"
-    type         = "4m"
+    # file_format defaults to "raw" - no need to specify
+    # type defaults to "4m" - no need to specify
   }
 
-  # Disk Configuration
+  # Required: Disk configuration
   vm_disk = {
     scsi0 = {
       datastore_id = var.datastore
       size         = var.disk_size
-      file_format  = "raw"
-      iothread     = true
-      ssd          = true
-      discard      = "on"
       main_disk    = true
+      # file_format, iothread, ssd, discard all have optimal defaults
     }
   }
 
-  # Network Configuration - Dual NIC setup (conditionally add net1)
+  # Required: Network configuration
+  # Note: Dual NIC support simplified - only specify what differs from defaults
   vm_net_ifaces = merge(
     {
       net0 = {
         bridge    = var.network_bridge
         vlan_id   = var.vlan_id
-        firewall  = false
         ipv4_addr = "${var.ip_address}/${var.network_cidr}"
         ipv4_gw   = var.network_gateway
+        # enabled, firewall, model, mtu all have sensible defaults
       }
     },
     var.enable_secondary_nic ? {
       net1 = {
         bridge    = var.network_bridge_secondary
         vlan_id   = var.vlan_id_secondary
-        firewall  = false
         ipv4_addr = "${var.ip_address_secondary}/${var.network_cidr_secondary}"
         ipv4_gw   = null # Secondary NIC doesn't need a gateway
       }
     } : {}
   )
 
-  # Cloud-init Configuration
+  # Required: Cloud-init configuration
   vm_init = {
-    datastore_id = "local"
-    interface    = "ide0"
+    datastore_id = var.cloud_init_datastore
+    # interface defaults to "ide2" (Proxmox convention) - no need to specify
 
     dns = {
       domain  = var.dns_domain
@@ -146,12 +105,19 @@ module "single_vm" {
     }
   }
 
-  # VM Start Settings
+  # Override: VM start settings (only if different from defaults)
   vm_start = {
-    on_deploy  = var.start_on_deploy
-    on_boot    = var.start_on_boot
-    order      = var.boot_order
-    up_delay   = var.boot_up_delay
-    down_delay = var.boot_down_delay
+    on_deploy = var.start_on_deploy
+    on_boot   = var.start_on_boot
+    # order, up_delay, down_delay default to 0 - no need to specify
   }
+
+  # Note: The following are NOT specified because module defaults are optimal:
+  # - vm_bios (defaults to "ovmf" for UEFI)
+  # - vm_machine (defaults to "q35" modern chipset)
+  # - vm_os (defaults to "l26" for Linux 2.6+)
+  # - vm_agent (defaults to enabled with 15m timeout and trim)
+  # - vm_rng (defaults to /dev/urandom for entropy)
+  # - vm_serial (defaults to serial0 socket for console access)
+  # See terraform/modules/vm/DEFAULTS.md for complete defaults reference
 }

@@ -101,6 +101,44 @@ variable "vlan_id_secondary" {
 }
 
 # =============================================================================
+# = Hardware Configuration ====================================================
+# =============================================================================
+
+variable "display_type" {
+  description = "Display type for VMs (module default is 'std', common override is 'serial0')"
+  type        = string
+  default     = "serial0"
+}
+
+# Note: CPU cores and memory are defined per-node in locals.nodes in main.tf
+# Note: vm_bios, vm_machine, vm_os, cpu_type, qemu_agent_*, disk_*, efi_*,
+#       network_model, network_mtu, network_firewall removed - all module defaults
+
+# =============================================================================
+# = Cloud-init Configuration ==================================================
+# =============================================================================
+
+variable "cloud_init_datastore" {
+  description = "Datastore for cloud-init drive"
+  type        = string
+  default     = "local"
+}
+
+variable "dns_servers" {
+  description = "List of DNS servers"
+  type        = list(string)
+  default     = ["1.1.1.1", "8.8.8.8"]
+}
+
+variable "vm_username" {
+  description = "Username for VMs"
+  type        = string
+  default     = "ubuntu"
+}
+
+# Note: cloud_init_interface removed - module defaults to "ide2" (Proxmox convention)
+
+# =============================================================================
 # = SSH Configuration =========================================================
 # =============================================================================
 
@@ -109,3 +147,21 @@ variable "ssh_public_keys" {
   type        = list(string)
   default     = []
 }
+
+# =============================================================================
+# = Start Configuration =======================================================
+# =============================================================================
+
+variable "start_on_deploy" {
+  description = "Start VMs immediately after deployment (module default is true)"
+  type        = bool
+  default     = true
+}
+
+variable "start_on_boot" {
+  description = "Start VMs automatically on Proxmox node boot (module default is true)"
+  type        = bool
+  default     = true
+}
+
+# Note: boot_order, boot_up_delay, boot_down_delay removed - module defaults to 0
