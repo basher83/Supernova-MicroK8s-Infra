@@ -302,7 +302,7 @@ variable "vm_net_ifaces" {
 variable "vm_init" {
   type = object({
     datastore_id = string
-    interface    = optional(string, "ide0")
+    interface    = optional(string, "ide2")
     user = optional(object({
       name     = optional(string)
       password = optional(string)
@@ -313,7 +313,7 @@ variable "vm_init" {
       servers = optional(list(string))
     }))
   })
-  description = "Initial configuration for the VM. Required for the creation of the Cloud-Init drive."
+  description = "Initial configuration for the VM. Required for the creation of the Cloud-Init drive. Uses ide2 by default (Proxmox recommended convention)."
 
   validation {
     condition     = can(regex("(?:scsi|sata|ide)\\d+", var.vm_init.interface))
