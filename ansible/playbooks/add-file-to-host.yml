@@ -9,8 +9,8 @@
   tasks:
     - name: Copy a new file into place, backing up the original if it differs from the copied version
       ansible.builtin.copy:
-        src: "{{ playbook_dir }}/../files/vendor-data.yaml"
-        dest: /var/lib/vz/snippets/vendor-data.yaml
+        src: "{{ playbook_dir }}/../files/user-data-custom.yaml"
+        dest: /var/lib/vz/snippets/user-data-custom.yaml
         owner: root
         group: root
         mode: '0644'
