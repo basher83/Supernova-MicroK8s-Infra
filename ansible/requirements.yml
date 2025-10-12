@@ -1,6 +1,6 @@
 ---
 # Ansible Galaxy requirements file
-# Install with: uv runansible-galaxy install -r requirements.yml
+# Install with: ansible-galaxy install -r requirements.yml
 
 collections:
   # General community modules
