@@ -18,6 +18,7 @@
 
 - **[ansible-adhoc-cmds.md](ansible-adhoc-cmds.md)** - Quick Ansible command reference
 - **[proxmox-qm-cmd.md](proxmox-qm-cmd.md)** - Proxmox VM template creation guide
+- **[terraform/deployment-patterns.md](terraform/deployment-patterns.md)** - Production-grade Terraform deployment patterns (MAC addressing, VM ID offsets, IP fallbacks)
 
 ### 🐛 Troubleshooting
 
