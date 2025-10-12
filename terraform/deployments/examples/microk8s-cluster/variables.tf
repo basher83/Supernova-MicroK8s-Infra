@@ -29,6 +29,21 @@ variable "proxmox_insecure" {
 }
 
 # =============================================================================
+# = Environment Configuration =================================================
+# =============================================================================
+
+variable "environment" {
+  description = "Deployment environment (determines VM ID offset to prevent collisions)"
+  type        = string
+  default     = "staging"
+
+  validation {
+    condition     = contains(["dev", "staging", "prod"], var.environment)
+    error_message = "Environment must be dev, staging, or prod."
+  }
+}
+
+# =============================================================================
 # = Template Configuration ====================================================
 # =============================================================================
 

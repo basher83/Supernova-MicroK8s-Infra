@@ -17,10 +17,10 @@ output "cluster_nodes" {
 }
 
 output "cluster_ips" {
-  description = "Map of node names to their primary IPv4 addresses"
+  description = "Map of node names to their primary IPv4 addresses (with fallback to configured IPs)"
   value = {
     for name, vm in module.cluster_vms :
-    name => try(vm.ipv4_addresses[1][0], vm.ipv4_addresses[0][0], "N/A")
+    name => vm.primary_ip # Uses enhanced output with fallback logic
   }
 }
 
@@ -47,7 +47,7 @@ output "cluster_inventory" {
       hosts = {
         for name, vm in module.cluster_vms :
         name => {
-          ansible_host = try(vm.ipv4_addresses[1][0], vm.ipv4_addresses[0][0], "N/A")
+          ansible_host = vm.primary_ip # Uses enhanced output with fallback
           vm_id        = vm.vm_id
           pve_node     = vm.vm_node
         }
@@ -64,7 +64,7 @@ output "cluster_summary" {
     Total Nodes: ${length(module.cluster_vms)}
 
     Nodes:
-    ${join("\n    ", [for name, vm in module.cluster_vms : "${name}: ${try(vm.ipv4_addresses[1][0], vm.ipv4_addresses[0][0], "N/A")} (ID: ${vm.vm_id}, Node: ${vm.vm_node})"])}
+    ${join("\n    ", [for name, vm in module.cluster_vms : "${name}: ${vm.primary_ip} (ID: ${vm.vm_id}, Node: ${vm.vm_node})"])}
   EOT
 }
 
@@ -72,6 +72,6 @@ output "ssh_commands" {
   description = "SSH commands to connect to each node"
   value = {
     for name, vm in module.cluster_vms :
-    name => "ssh ubuntu@${try(vm.ipv4_addresses[1][0], vm.ipv4_addresses[0][0], "N/A")}"
+    name => "ssh ubuntu@${vm.primary_ip}"
   }
 }
