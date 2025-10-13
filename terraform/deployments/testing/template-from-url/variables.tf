@@ -1,11 +1,3 @@
-# =============================================================================
-# = Proxmox Connection Variables ==============================================
-# =============================================================================
-variable "proxmox_insecure" {
-  type        = bool
-  description = "Skip TLS verification (useful for self-signed certificates)"
-  default     = true
-}
 
 variable "proxmox_node" {
   type        = string

@@ -2,16 +2,6 @@
 # = Proxmox Connection Variables ==============================================
 # =============================================================================
 
-variable "proxmox_endpoint" {
-  type        = string
-  description = "Proxmox API endpoint (e.g., https://proxmox.example.com:8006)"
-}
-
-variable "proxmox_insecure" {
-  type        = bool
-  description = "Skip TLS verification (useful for self-signed certificates)"
-  default     = true
-}
 
 variable "proxmox_node" {
   type        = string

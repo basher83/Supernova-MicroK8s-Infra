@@ -16,17 +16,6 @@
 # = Proxmox Configuration =====================================================
 # =============================================================================
 
-variable "proxmox_endpoint" {
-  description = "Proxmox API endpoint URL"
-  type        = string
-  default     = "https://proxmox.local:8006"
-}
-
-variable "proxmox_insecure" {
-  description = "Allow insecure TLS connections to Proxmox"
-  type        = bool
-  default     = true
-}
 
 # =============================================================================
 # = Template Configuration ====================================================
