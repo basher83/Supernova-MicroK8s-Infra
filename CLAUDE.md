@@ -95,6 +95,7 @@ module "cluster_vms" {
 ```
 
 **Why for_each over wrapper modules:**
+
 - ✅ Maximum flexibility - full access to vm module capabilities
 - ✅ Clear logic - deployment configuration visible in one place
 - ✅ Terraform best practices - native for_each is more idiomatic
@@ -193,7 +194,7 @@ Standard deployment follows this sequence:
 1. **Create Proxmox VM Template** (PREP-001 in tasks/)
 2. **Configure Terraform** (`terraform.auto.tfvars`)
 3. **Deploy VMs**: [WIP]: Modules are set for deployments, `terraform/deployments/*` is the location for the deployments.
-4. **Configure Cluster**: `cd ansible && ansible-playbook playbooks/microk8s-deploy.yml`
+4. **Configure Cluster**: `cd ansible && uv run ansible-playbook playbooks/microk8s-deploy.yml`
 5. **Verify Deployment**: Check MicroK8s, Rancher, and ArgoCD
 
 See `tasks/INDEX.md` for detailed step-by-step guidance.
@@ -206,9 +207,9 @@ cd terraform
 tofu plan
 
 # Ansible
-ansible-playbook --syntax-check playbooks/microk8s-deploy.yml
-ansible-playbook --check --diff playbooks/microk8s-deploy.yml
-ansible-lint roles/
+uv run ansible-playbook --syntax-check playbooks/microk8s-deploy.yml
+uv run ansible-playbook --check --diff playbooks/microk8s-deploy.yml
+uv run ansible-lint roles/
 
 # Pre-commit
 mise run hooks-run
