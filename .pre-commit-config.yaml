@@ -1,4 +1,16 @@
+default_install_hook_types:
+  - pre-commit
+  - post-checkout
+  - post-merge
+  - post-rewrite
+
 repos:
+  - repo: https://github.com/astral-sh/uv-pre-commit
+    # uv version.
+    rev: 0.9.2
+    hooks:
+      - id: uv-sync
+
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v5.0.0
     hooks:
@@ -14,34 +26,9 @@ repos:
       - id: check-ast
       - id: check-json
       - id: check-merge-conflict
-  # - repo: https://github.com/koalaman/shellcheck-precommit
-  #   rev: v0.10.0
-  #   hooks:
-  #     - id: shellcheck
-  #       args: ["--severity=warning"]  # Optionally only show errors
+      - id: check-symlinks
 
-  # - repo: https://github.com/igorshubovych/markdownlint-cli
-  #   rev: v0.44.0
-  #   hooks:
-  #     - id: markdownlint
-  #
-  # - repo: https://github.com/rhysd/actionlint
-  #   rev: v1.7.7
-  #   hooks:
-  #     - id: actionlint
   - repo: local
-    # - repo: https://github.com/antonbabenko/pre-commit-terraform
-    #   rev: v1.99.0
-    #   hooks:
-    #     - id: terraform_fmt
-    #     - id: terraform_validate
-    #     # - id: terraform_tflint
-
-    # - repo: https://github.com/adrienverge/yamllint
-    #   rev: v1.37.1
-    #   hooks:
-    #     - id: yamllint
-
     hooks:
       - id: mise-terraform-fmt
         name: terraform fmt via mise
