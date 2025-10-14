@@ -24,12 +24,13 @@ provider "infisical" {
 data "infisical_secrets" "proxmox_secrets" {
   env_slug     = "dev"
   workspace_id = "7b832220-24c0-45bc-a5f1-ce9794a31259"
-  folder_path  = "/doggos-cluster"
+  folder_path  = "/nexus_cluster"
 }
 
 provider "proxmox" {
   username = sensitive(data.infisical_secrets.proxmox_secrets.secrets["PROXMOX_USERNAME"].value)
   password = sensitive(data.infisical_secrets.proxmox_secrets.secrets["PROXMOX_PASSWORD"].value)
+  # api_token = sensitive(data.infisical_secrets.proxmox_secrets.secrets["PROXMOX_TERRAFORM_API_TOKEN_NEXUS"].value)
   endpoint = sensitive(data.infisical_secrets.proxmox_secrets.secrets["PROXMOX_ENDPOINT"].value)
   insecure = true
   ssh {
