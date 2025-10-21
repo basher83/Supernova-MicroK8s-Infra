@@ -9,3 +9,8 @@ all:
         holly:
         lloyd:
         mable:
+    matrix_cluster:
+      hosts:
+        foxtrot:
+        golf:
+        hotel:
