@@ -26,7 +26,7 @@ yamlfmt = "0.20.0"
 shellcheck = "0.11.0"
 markdownlint-cli2 = "0.18.1"
 opentofu = "1.10.6"
-uv = "0.9.2"
+uv = "0.9.7"
 
 [env]
 _.python.venv = { path = ".venv", create = true } # create the venv if it doesn't exist
