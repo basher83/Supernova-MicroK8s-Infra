@@ -10,6 +10,6 @@ permissions:
   pull-requests: write
 jobs:
   sync-labels:
-    uses: basher83/.github/.github/workflows/sync-labels.yml@4136701a184e3c9979c33adafc16966b7c5769b3 # main
+    uses: basher83/.github/.github/workflows/sync-labels.yml@6b82edb85d554bfe2297a3ed0f19b75f80d894a6 # main
 # with:
 #   label_definitions_url: "https://raw.githubusercontent.com/basher83/docs/main/mission-control/github-configs/label-definitions.yml" # optional, can omit for default
