@@ -19,13 +19,13 @@ rg = "15.2.0"
 terraform-docs = "0.24.0"
 tflint = "0.64.0"
 python = "3.14.7"
-git-cliff = "2.13.1"
+git-cliff = "2.14.1"
 yamllint = "1.38.0"
 yamlfmt = "0.21.0"
 shellcheck = "0.11.0"
 markdownlint-cli2 = "0.23.2"
 opentofu = "1.12.6"
-uv = "0.12.7"
+uv = "0.12.9"
 
 [env]
 _.python.venv = { path = ".venv", create = true } # create the venv if it doesn't exist
